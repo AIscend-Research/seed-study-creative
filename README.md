@@ -11,6 +11,32 @@ Everything runs on [Fireworks](https://fireworks.ai) — image generation, text
 generation, VLM captioning, and embeddings all come from the same provider, so
 the two modalities are measured through comparable machinery.
 
+## What one sweep produces
+
+The default design is a **specificity ladder**: 6 rungs × 2 prompt families × 2
+models × 20 seeds, per modality. 480 artifacts each side, ~$3, ~35 minutes. That
+single sweep carries four analyses:
+
+| # | question | what it is | extra cost |
+|---|---|---|---|
+| 1 | How much of the output is the seed? | variance decomposition, both modalities | — |
+| 2 | Does specification have a **floor**? | seed variance per rung | — |
+| 3 | Is the seed noise, or a **style**? | prompt × seed crossed test | free |
+| 4 | Can the prompt be **recovered** from the artifact? | leave-one-out classifier | free |
+
+**Rungs are nested.** Each rung strictly extends the one below it — `"a landscape"`
+→ 35 words of pinned-down detail — so "more specific" means "more constraints
+added" and nothing else changed. Two families guard against the answer being a
+fact about one subject.
+
+This is also the answer to *"your prompt set is arbitrary."* It is: a hand-picked
+set makes the seed/prompt ratio a property of the picker. A nested ladder is a
+controlled within-family manipulation, so the question stops being "is the seed
+bigger than the prompt" (unanswerable without a prompt distribution) and becomes
+**"how much randomness can specification actually remove, and does it ever reach
+zero"** — which needs no prompt distribution at all. The floor curve never divides
+by prompt variance for exactly this reason.
+
 ## The design
 
 A fully crossed **prompt × model** grid with **n seeds per cell**, run once per cell.
@@ -65,6 +91,31 @@ variance shares are commensurable. The surface pair is a model-free control: if
 it agrees, the result isn't an artifact of the embedder. If it disagrees, that
 disagreement is the finding.
 
+### The seed-signature test — and why it matters
+
+The decomposition above rests on an assumption: that seed 7 for prompt A shares
+nothing with seed 7 for prompt B. That assumption is **testable**, because the
+same seed list runs against every prompt. Prompt and seed form a complete crossed
+grid with one artifact per cell, so the prompt × seed interaction is the error
+term (the standard randomised-block layout with no replication):
+
+```
+SS_total = SS_prompt + SS_seed + SS_residual
+F        = MS_seed / MS_residual
+```
+
+Seed labels are permuted independently *within* each prompt, which breaks
+cross-prompt consistency while leaving each prompt's own spread untouched.
+
+If a seed effect survives, the seed is not noise — it is a consistent hand applied
+on top of whatever was asked for, and "uncredited collaborator" stops being a
+metaphor. The test also names the features it acts on, so the effect can be
+described rather than only detected. A null result supports the main
+decomposition rather than undermining it; either way the paragraph writes itself.
+
+Run per generative model, since seeds mean different things to different samplers
+and pooling would let a model effect pose as a seed effect.
+
 ### What's reported
 
 - variance share per source, per view
@@ -79,6 +130,16 @@ disagreement is the finding.
 - `P(seed pair > prompt pair)`: the probability that two outputs *sharing* a
   prompt are farther apart than two outputs from *different* prompts. At 0.5 the
   prompt separates nothing at all.
+- **specificity floor**: seed variance per rung, as a fraction of the three-word
+  prompt's, with a bootstrap band. Whatever the curve flattens to is what
+  prompting cannot buy back.
+- **intent legibility**: leave-one-out nearest-centroid accuracy at recovering
+  which prompt produced an output, against chance, plus per-rung accuracy and the
+  most confusable prompt pairs. Classification runs within a generative model so
+  model identity can't leak in as a cue. The LOO correction is a rank-one centroid
+  update — without it every sample is pulled toward its own class and accuracy is
+  optimistic.
+- **seed signature**: η², F, permutation p, and the named features the seed acts on.
 
 ## Install
 
@@ -90,14 +151,19 @@ export FIREWORKS_API_KEY=...
 ## Use
 
 ```bash
-make test                                  # 17 tests, offline
+make test                                  # 31 tests, offline
 make mock                                  # full pipeline on synthetic data, no API calls
 make estimate                              # count the API calls the design implies
 
-python -m seedstudy init --output configs/full.json    # write a config to edit
-python -m seedstudy run --config configs/pilot.json    # small real run
-python -m seedstudy run --config configs/full.json     # 240 images + 240 generations
+make ladder                                # the lean study: 480 + 480 artifacts, ~$3
+python -m seedstudy run --config configs/pilot.json    # small real run first
 ```
+
+Verify your per-call latency and that the text models actually honour `seed` with
+the pilot before committing to the full sweep. If a model ignores the seed, its
+within-cell variance won't be zero — sampling is still stochastic — it just won't
+be *seed* variance, which quietly breaks the interpretation. Identical seeds
+should reproduce identical outputs.
 
 `generate` and `analyze` split cleanly, and both resume:
 
@@ -151,12 +217,21 @@ rather than quietly producing a decomposition whose components aren't estimable.
 
 ## Testing
 
-`tests/test_variance.py` plants known variance splits and checks the
-decomposition recovers them — prompt-dominant, seed-dominant, and pure noise —
-plus orthogonality, degrees of freedom, the single-model fallback, and the
-refusal to analyse an unbalanced grid. `tests/test_pipeline.py` runs the whole
-sweep → features → ANOVA → report chain against `MockClient`, an offline backend
-whose outputs are built from controllable prompt/seed/model strengths.
+31 tests, all offline. Every statistical claim is checked against data with a
+planted answer:
+
+- `test_variance.py` — plants known variance splits and checks recovery
+  (prompt-dominant, seed-dominant, pure noise), plus orthogonality, degrees of
+  freedom, the single-model fallback, and refusal to analyse an unbalanced grid.
+- `test_experiments.py` — plants a cross-prompt seed effect and checks the
+  signature test finds it *and* that it stays null when the seed is pure noise;
+  checks the top-features report names the two dimensions the effect was planted
+  in; checks legibility is high when prompts are separable, at chance when the
+  prompt leaves no trace, and not optimistic on noise; checks the floor curve is
+  monotone under decay and detects a plateau above zero.
+- `test_pipeline.py` — the whole sweep → features → ANOVA → report chain against
+  `MockClient`, an offline backend built from controllable prompt/seed/model
+  strengths.
 
 ## What this can and can't show
 

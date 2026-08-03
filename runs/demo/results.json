@@ -1,0 +1,346 @@
+{
+  "meta": {
+    "run": "runs/demo (synthetic illustration)",
+    "n_artifacts": 960
+  },
+  "decompositions": {
+    "image_semantic": {
+      "view": "image_semantic",
+      "modality": "image",
+      "n_samples": 240,
+      "n_prompts": 6,
+      "n_models": 2,
+      "n_seeds": 20,
+      "n_features": 48,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 5,
+          "ss": 3020.0615107179724,
+          "ms": 604.0123021435945,
+          "eta2": 0.262158117249824,
+          "var_component": 14.3281485188141,
+          "var_share": 0.27145373924975086,
+          "p_perm": 0.005
+        },
+        {
+          "source": "model",
+          "df": 1,
+          "ss": 534.3204595223783,
+          "ms": 534.3204595223783,
+          "eta2": 0.04638198433353979,
+          "var_component": 4.195284151094564,
+          "var_share": 0.07948169775979498,
+          "p_perm": 0.005
+        },
+        {
+          "source": "prompt:model",
+          "df": 5,
+          "ss": 154.43180695515275,
+          "ms": 30.88636139103055,
+          "eta2": 0.013405538798190344,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": 0.77
+        },
+        {
+          "source": "seed",
+          "df": 228,
+          "ss": 7811.1862228044965,
+          "ms": 34.25958869651095,
+          "eta2": 0.6780543596184458,
+          "var_component": 34.25958869651095,
+          "var_share": 0.6490645629904541,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.27145373924975086,
+        "model": 0.07948169775979498,
+        "prompt:model": 0.0,
+        "seed": 0.6490645629904541
+      },
+      "seed_to_prompt": 2.3910687868376814,
+      "seed_to_prompt_ci": [
+        2.2115438047220044,
+        4.229186704607985
+      ],
+      "p_seed_beats_prompt": 0.1222707423580786,
+      "mean_within_prompt_dist": 8.496394558665957,
+      "mean_between_prompt_dist": 9.998531951218265
+    },
+    "image_lowlevel": {
+      "view": "image_lowlevel",
+      "modality": "image",
+      "n_samples": 240,
+      "n_prompts": 6,
+      "n_models": 2,
+      "n_seeds": 20,
+      "n_features": 48,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 5,
+          "ss": 4757.199001313197,
+          "ms": 951.4398002626394,
+          "eta2": 0.4129513021973261,
+          "var_component": 23.143546079508972,
+          "var_share": 0.4315624129311353,
+          "p_perm": 0.005
+        },
+        {
+          "source": "model",
+          "df": 1,
+          "ss": 405.3565398685501,
+          "ms": 405.3565398685501,
+          "eta2": 0.0351871996413672,
+          "var_component": 3.1638215232189135,
+          "var_share": 0.05899642370936023,
+          "p_perm": 0.005
+        },
+        {
+          "source": "prompt:model",
+          "df": 5,
+          "ss": 128.48978541140244,
+          "ms": 25.69795708228049,
+          "eta2": 0.011153627205850907,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": 0.69
+        },
+        {
+          "source": "seed",
+          "df": 228,
+          "ss": 6228.95467340685,
+          "ms": 27.319976637749342,
+          "eta2": 0.5407078709554557,
+          "var_component": 27.319976637749342,
+          "var_share": 0.5094411633595045,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.4315624129311353,
+        "model": 0.05899642370936023,
+        "prompt:model": 0.0,
+        "seed": 0.5094411633595045
+      },
+      "seed_to_prompt": 1.1804576767921546,
+      "seed_to_prompt_ci": [
+        1.1261074747154167,
+        1.8149763666721572
+      ],
+      "p_seed_beats_prompt": 0.016270337922403004,
+      "mean_within_prompt_dist": 7.5718479582966225,
+      "mean_between_prompt_dist": 10.132865698068684
+    },
+    "text_semantic": {
+      "view": "text_semantic",
+      "modality": "text",
+      "n_samples": 240,
+      "n_prompts": 6,
+      "n_models": 2,
+      "n_seeds": 20,
+      "n_features": 48,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 5,
+          "ss": 7545.098496677489,
+          "ms": 1509.0196993354978,
+          "eta2": 0.6549564667254765,
+          "var_component": 37.41895588132095,
+          "var_share": 0.658127292312166,
+          "p_perm": 0.005
+        },
+        {
+          "source": "model",
+          "df": 1,
+          "ss": 601.6796377327844,
+          "ms": 601.6796377327844,
+          "eta2": 0.05222913521985976,
+          "var_component": 4.911818113751038,
+          "var_share": 0.08638941091209051,
+          "p_perm": 0.005
+        },
+        {
+          "source": "prompt:model",
+          "df": 5,
+          "ss": 61.3073204132988,
+          "ms": 12.26146408265976,
+          "eta2": 0.005321816008098854,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": 0.93
+        },
+        {
+          "source": "seed",
+          "df": 228,
+          "ss": 3311.914545176428,
+          "ms": 14.525940987615913,
+          "eta2": 0.2874925820465649,
+          "var_component": 14.525940987615913,
+          "var_share": 0.2554832967757435,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.658127292312166,
+        "model": 0.08638941091209051,
+        "prompt:model": 0.0,
+        "seed": 0.2554832967757435
+      },
+      "seed_to_prompt": 0.3881973894110464,
+      "seed_to_prompt_ci": [
+        0.3702310523261702,
+        0.6256468541563115
+      ],
+      "p_seed_beats_prompt": 0.0,
+      "mean_within_prompt_dist": 5.765694024043696,
+      "mean_between_prompt_dist": 10.388748085190025
+    },
+    "text_lexical": {
+      "view": "text_lexical",
+      "modality": "text",
+      "n_samples": 240,
+      "n_prompts": 6,
+      "n_models": 2,
+      "n_seeds": 20,
+      "n_features": 48,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 5,
+          "ss": 4832.854152425236,
+          "ms": 966.5708304850472,
+          "eta2": 0.4195185896202462,
+          "var_component": 23.51947298967247,
+          "var_share": 0.4392319469057572,
+          "p_perm": 0.005
+        },
+        {
+          "source": "model",
+          "df": 1,
+          "ss": 374.50325770809525,
+          "ms": 374.50325770809525,
+          "eta2": 0.0325089633427166,
+          "var_component": 2.90592789008289,
+          "var_share": 0.054268918580331754,
+          "p_perm": 0.005
+        },
+        {
+          "source": "prompt:model",
+          "df": 5,
+          "ss": 128.95955449074225,
+          "ms": 25.79191089814845,
+          "eta2": 0.01119440577176582,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": 0.585
+        },
+        {
+          "source": "seed",
+          "df": 228,
+          "ss": 6183.683035375926,
+          "ms": 27.121416821824237,
+          "eta2": 0.5367780412652714,
+          "var_component": 27.121416821824237,
+          "var_share": 0.506499134513911,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.4392319469057572,
+        "model": 0.054268918580331754,
+        "prompt:model": 0.0,
+        "seed": 0.506499134513911
+      },
+      "seed_to_prompt": 1.153147301971154,
+      "seed_to_prompt_ci": [
+        1.1163105093221928,
+        1.8981854662840685
+      ],
+      "p_seed_beats_prompt": 0.0248565965583174,
+      "mean_within_prompt_dist": 7.5468973839809514,
+      "mean_between_prompt_dist": 10.150919020761318
+    }
+  },
+  "comparison": {
+    "per_view": [
+      {
+        "view": "image_lowlevel",
+        "modality": "image",
+        "seed_share": 0.5094411633595045,
+        "prompt_share": 0.4315624129311353,
+        "model_share": 0.05899642370936023,
+        "interaction_share": 0.0,
+        "seed_to_prompt": 1.1804576767921546,
+        "seed_to_prompt_ci": [
+          1.1261074747154167,
+          1.8149763666721572
+        ],
+        "p_seed_beats_prompt": 0.016270337922403004
+      },
+      {
+        "view": "image_semantic",
+        "modality": "image",
+        "seed_share": 0.6490645629904541,
+        "prompt_share": 0.27145373924975086,
+        "model_share": 0.07948169775979498,
+        "interaction_share": 0.0,
+        "seed_to_prompt": 2.3910687868376814,
+        "seed_to_prompt_ci": [
+          2.2115438047220044,
+          4.229186704607985
+        ],
+        "p_seed_beats_prompt": 0.1222707423580786
+      },
+      {
+        "view": "text_lexical",
+        "modality": "text",
+        "seed_share": 0.506499134513911,
+        "prompt_share": 0.4392319469057572,
+        "model_share": 0.054268918580331754,
+        "interaction_share": 0.0,
+        "seed_to_prompt": 1.153147301971154,
+        "seed_to_prompt_ci": [
+          1.1163105093221928,
+          1.8981854662840685
+        ],
+        "p_seed_beats_prompt": 0.0248565965583174
+      },
+      {
+        "view": "text_semantic",
+        "modality": "text",
+        "seed_share": 0.2554832967757435,
+        "prompt_share": 0.658127292312166,
+        "model_share": 0.08638941091209051,
+        "interaction_share": 0.0,
+        "seed_to_prompt": 0.3881973894110464,
+        "seed_to_prompt_ci": [
+          0.3702310523261702,
+          0.6256468541563115
+        ],
+        "p_seed_beats_prompt": 0.0
+      }
+    ],
+    "semantic_pair": {
+      "image_view": "image_semantic",
+      "text_view": "text_semantic",
+      "image_seed_share": 0.6490645629904541,
+      "text_seed_share": 0.2554832967757435,
+      "seed_share_gap": 0.3935812662147106,
+      "image_seed_to_prompt": 2.3910687868376814,
+      "text_seed_to_prompt": 0.3881973894110464
+    },
+    "surface_pair": {
+      "image_view": "image_lowlevel",
+      "text_view": "text_lexical",
+      "image_seed_share": 0.5094411633595045,
+      "text_seed_share": 0.506499134513911,
+      "seed_share_gap": 0.0029420288455934696,
+      "image_seed_to_prompt": 1.1804576767921546,
+      "text_seed_to_prompt": 1.153147301971154
+    }
+  }
+}

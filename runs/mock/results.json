@@ -1,0 +1,355 @@
+{
+  "meta": {
+    "run": "runs/mock",
+    "study": "pilot",
+    "n_artifacts": 24,
+    "seeds": "6 per cell",
+    "image_models": "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0",
+    "text_models": "accounts/fireworks/models/llama-v3p1-8b-instruct",
+    "embed_model": "nomic-ai/nomic-embed-text-v1.5",
+    "vision_model": "accounts/fireworks/models/qwen2p5-vl-32b-instruct",
+    "permutations": 999,
+    "bootstrap": 500,
+    "balance": "{\"text\": {\"n_artifacts\": 12, \"n_cells\": 2, \"balanced\": true, \"cell_sizes\": [6], \"min_cell\": 6}, \"image\": {\"n_artifacts\": 12, \"n_cells\": 2, \"balanced\": true, \"cell_sizes\": [6], \"min_cell\": 6}}"
+  },
+  "decompositions": {
+    "image_lowlevel": {
+      "view": "image_lowlevel",
+      "modality": "image",
+      "n_samples": 12,
+      "n_prompts": 2,
+      "n_models": 1,
+      "n_seeds": 6,
+      "n_features": 51,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 1,
+          "ss": 233.52495317698754,
+          "ms": 233.52495317698754,
+          "eta2": 0.3815767208774306,
+          "var_component": 32.61290808244772,
+          "var_share": 0.46285434335070785,
+          "p_perm": 0.007
+        },
+        {
+          "source": "model",
+          "df": 0,
+          "ss": 1.1915086589275687e-30,
+          "ms": 0.0,
+          "eta2": 1.94690957341106e-33,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "prompt:model",
+          "df": 0,
+          "ss": 1.1915086589275687e-30,
+          "ms": 0.0,
+          "eta2": 1.94690957341106e-33,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "seed",
+          "df": 10,
+          "ss": 378.47504682301246,
+          "ms": 37.84750468230125,
+          "eta2": 0.6184232791225693,
+          "var_component": 37.84750468230125,
+          "var_share": 0.5371456566492921,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.46285434335070785,
+        "model": 0.0,
+        "prompt:model": 0.0,
+        "seed": 0.5371456566492921
+      },
+      "seed_to_prompt": 1.160506894589716,
+      "seed_to_prompt_ci": [
+        0.3456379124833971,
+        Infinity
+      ],
+      "p_seed_beats_prompt": 0.24154589371980675,
+      "mean_within_prompt_dist": 8.303044361154557,
+      "mean_between_prompt_dist": 11.331144245847746
+    },
+    "image_semantic": {
+      "view": "image_semantic",
+      "modality": "image",
+      "n_samples": 12,
+      "n_prompts": 2,
+      "n_models": 1,
+      "n_seeds": 6,
+      "n_features": 64,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 1,
+          "ss": 68.45192500107642,
+          "ms": 68.45192500107642,
+          "eta2": 0.08913011067848492,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": 0.59
+        },
+        {
+          "source": "model",
+          "df": 0,
+          "ss": 3.4307232076017964e-31,
+          "ms": 0.0,
+          "eta2": 4.4670875098981724e-34,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "prompt:model",
+          "df": 0,
+          "ss": 3.4307232076017964e-31,
+          "ms": 0.0,
+          "eta2": 4.4670875098981724e-34,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "seed",
+          "df": 10,
+          "ss": 699.5480749989237,
+          "ms": 69.95480749989237,
+          "eta2": 0.9108698893215151,
+          "var_component": 69.95480749989237,
+          "var_share": 1.0,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.0,
+        "model": 0.0,
+        "prompt:model": 0.0,
+        "seed": 1.0
+      },
+      "seed_to_prompt": Infinity,
+      "seed_to_prompt_ci": [
+        2.053118278819797,
+        Infinity
+      ],
+      "p_seed_beats_prompt": 0.5169082125603864,
+      "mean_within_prompt_dist": 11.84035866487848,
+      "mean_between_prompt_dist": 11.842142482727306
+    },
+    "text_lexical": {
+      "view": "text_lexical",
+      "modality": "text",
+      "n_samples": 12,
+      "n_prompts": 2,
+      "n_models": 1,
+      "n_seeds": 6,
+      "n_features": 2,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 1,
+          "ss": 1.1217974266382944,
+          "ms": 1.1217974266382944,
+          "eta2": 0.04674155944326227,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": 0.486
+        },
+        {
+          "source": "model",
+          "df": 0,
+          "ss": 8.217301096053024e-33,
+          "ms": 0.0,
+          "eta2": 3.42387545668876e-34,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "prompt:model",
+          "df": 0,
+          "ss": 8.217301096053024e-33,
+          "ms": 0.0,
+          "eta2": 3.42387545668876e-34,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "seed",
+          "df": 10,
+          "ss": 22.8782025733617,
+          "ms": 2.28782025733617,
+          "eta2": 0.9532584405567376,
+          "var_component": 2.28782025733617,
+          "var_share": 1.0,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.0,
+        "model": 0.0,
+        "prompt:model": 0.0,
+        "seed": 1.0
+      },
+      "seed_to_prompt": Infinity,
+      "seed_to_prompt_ci": [
+        0.6290429031722863,
+        Infinity
+      ],
+      "p_seed_beats_prompt": 0.5458937198067633,
+      "mean_within_prompt_dist": 1.7370477505143616,
+      "mean_between_prompt_dist": 1.620279456622571
+    },
+    "text_semantic": {
+      "view": "text_semantic",
+      "modality": "text",
+      "n_samples": 12,
+      "n_prompts": 2,
+      "n_models": 1,
+      "n_seeds": 6,
+      "n_features": 64,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 1,
+          "ss": 51.97771787930352,
+          "ms": 51.97771787930352,
+          "eta2": 0.06767932015534313,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": 0.912
+        },
+        {
+          "source": "model",
+          "df": 0,
+          "ss": 4.026477537065581e-31,
+          "ms": 0.0,
+          "eta2": 5.242809293054141e-34,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "prompt:model",
+          "df": 0,
+          "ss": 4.026477537065582e-31,
+          "ms": 0.0,
+          "eta2": 5.242809293054143e-34,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "seed",
+          "df": 10,
+          "ss": 716.0222821206964,
+          "ms": 71.60222821206965,
+          "eta2": 0.9323206798446568,
+          "var_component": 71.60222821206965,
+          "var_share": 1.0,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.0,
+        "model": 0.0,
+        "prompt:model": 0.0,
+        "seed": 1.0
+      },
+      "seed_to_prompt": Infinity,
+      "seed_to_prompt_ci": [
+        2.3524451094043366,
+        Infinity
+      ],
+      "p_seed_beats_prompt": 0.6376811594202898,
+      "mean_within_prompt_dist": 11.968217450898814,
+      "mean_between_prompt_dist": 11.70175225821992
+    }
+  },
+  "comparison": {
+    "per_view": [
+      {
+        "view": "image_lowlevel",
+        "modality": "image",
+        "seed_share": 0.5371456566492921,
+        "prompt_share": 0.46285434335070785,
+        "model_share": 0.0,
+        "interaction_share": 0.0,
+        "seed_to_prompt": 1.160506894589716,
+        "seed_to_prompt_ci": [
+          0.3456379124833971,
+          Infinity
+        ],
+        "p_seed_beats_prompt": 0.24154589371980675
+      },
+      {
+        "view": "image_semantic",
+        "modality": "image",
+        "seed_share": 1.0,
+        "prompt_share": 0.0,
+        "model_share": 0.0,
+        "interaction_share": 0.0,
+        "seed_to_prompt": Infinity,
+        "seed_to_prompt_ci": [
+          2.053118278819797,
+          Infinity
+        ],
+        "p_seed_beats_prompt": 0.5169082125603864
+      },
+      {
+        "view": "text_lexical",
+        "modality": "text",
+        "seed_share": 1.0,
+        "prompt_share": 0.0,
+        "model_share": 0.0,
+        "interaction_share": 0.0,
+        "seed_to_prompt": Infinity,
+        "seed_to_prompt_ci": [
+          0.6290429031722863,
+          Infinity
+        ],
+        "p_seed_beats_prompt": 0.5458937198067633
+      },
+      {
+        "view": "text_semantic",
+        "modality": "text",
+        "seed_share": 1.0,
+        "prompt_share": 0.0,
+        "model_share": 0.0,
+        "interaction_share": 0.0,
+        "seed_to_prompt": Infinity,
+        "seed_to_prompt_ci": [
+          2.3524451094043366,
+          Infinity
+        ],
+        "p_seed_beats_prompt": 0.6376811594202898
+      }
+    ],
+    "semantic_pair": {
+      "image_view": "image_semantic",
+      "text_view": "text_semantic",
+      "image_seed_share": 1.0,
+      "text_seed_share": 1.0,
+      "seed_share_gap": 0.0,
+      "image_seed_to_prompt": Infinity,
+      "text_seed_to_prompt": Infinity
+    },
+    "surface_pair": {
+      "image_view": "image_lowlevel",
+      "text_view": "text_lexical",
+      "image_seed_share": 0.5371456566492921,
+      "text_seed_share": 1.0,
+      "seed_share_gap": -0.46285434335070785,
+      "image_seed_to_prompt": 1.160506894589716,
+      "text_seed_to_prompt": Infinity
+    }
+  }
+}

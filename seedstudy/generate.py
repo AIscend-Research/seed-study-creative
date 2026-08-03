@@ -65,6 +65,10 @@ def _jobs(cfg: StudyConfig, modality: str) -> list[dict]:
                         "prompt_id": p["id"],
                         "prompt": p["text"],
                         "specificity": p.get("specificity", "na"),
+                        # Ladder metadata, carried through so the analysis can group
+                        # by rung without re-reading the config.
+                        "family": p.get("family", "na"),
+                        "rung": int(p.get("rung", 0)),
                         "seed": seed,
                     }
                 )

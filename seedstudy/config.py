@@ -94,6 +94,88 @@ DEFAULT_TEXT_PROMPTS = [
 ]
 
 
+# --- the specificity ladder ------------------------------------------------
+#
+# Six rungs per family, each strictly extending the one below it, so "more
+# specific" means "more constraints added" and nothing else changes. Two
+# families guard against the result being a fact about one subject.
+#
+# The ladder is what answers "your prompt set is arbitrary": a hand-picked set
+# makes the seed/prompt ratio a property of the picker, but a nested ladder is a
+# controlled within-family manipulation. The question stops being "is the seed
+# bigger than the prompt" (unanswerable without a prompt distribution) and
+# becomes "how much randomness can specification actually remove, and does it
+# ever reach zero" — which needs no prompt distribution at all.
+
+LADDER_IMAGE_PROMPTS = [
+    # landscape family
+    {"id": "landscape_r1", "family": "landscape", "rung": 1, "text": "a landscape"},
+    {"id": "landscape_r2", "family": "landscape", "rung": 2, "text": "a coastal landscape"},
+    {"id": "landscape_r3", "family": "landscape", "rung": 3,
+     "text": "a rocky coastal landscape at dusk"},
+    {"id": "landscape_r4", "family": "landscape", "rung": 4,
+     "text": "a rocky coastal landscape at dusk with a lighthouse on the headland"},
+    {"id": "landscape_r5", "family": "landscape", "rung": 5,
+     "text": "a rocky coastal landscape at dusk with a white lighthouse on the headland, "
+             "low grey clouds, calm sea, wide shot"},
+    {"id": "landscape_r6", "family": "landscape", "rung": 6,
+     "text": "a rocky coastal landscape at dusk with a white lighthouse on the headland, "
+             "low grey clouds, calm grey-blue sea, wide shot from a low cliff, muted "
+             "desaturated palette, soft even light, horizon in the lower third, "
+             "no people, no boats, no text"},
+    # object family
+    {"id": "object_r1", "family": "object", "rung": 1, "text": "a teapot"},
+    {"id": "object_r2", "family": "object", "rung": 2, "text": "a ceramic teapot"},
+    {"id": "object_r3", "family": "object", "rung": 3, "text": "a blue ceramic teapot on a table"},
+    {"id": "object_r4", "family": "object", "rung": 4,
+     "text": "a blue ceramic teapot centred on a plain white table"},
+    {"id": "object_r5", "family": "object", "rung": 5,
+     "text": "a blue ceramic teapot centred on a plain white table, soft frontal studio "
+             "lighting, product photograph"},
+    {"id": "object_r6", "family": "object", "rung": 6,
+     "text": "a single blue ceramic teapot centred on a plain white seamless backdrop, "
+             "soft frontal studio lighting, product photograph, sharp focus, eye-level "
+             "camera, even diffuse light, centred composition, no other objects, "
+             "no shadows, no text"},
+]
+
+LADDER_TEXT_PROMPTS = [
+    {"id": "landscape_r1", "family": "landscape", "rung": 1, "text": "Describe a landscape."},
+    {"id": "landscape_r2", "family": "landscape", "rung": 2,
+     "text": "Describe a coastal landscape."},
+    {"id": "landscape_r3", "family": "landscape", "rung": 3,
+     "text": "Describe a rocky coastal landscape at dusk."},
+    {"id": "landscape_r4", "family": "landscape", "rung": 4,
+     "text": "Write a short paragraph describing a rocky coastal landscape at dusk with a "
+             "lighthouse on the headland."},
+    {"id": "landscape_r5", "family": "landscape", "rung": 5,
+     "text": "Write a short paragraph of about 60 words describing a rocky coastal landscape "
+             "at dusk with a white lighthouse on the headland, low grey clouds, and a calm sea."},
+    {"id": "landscape_r6", "family": "landscape", "rung": 6,
+     "text": "Write exactly three sentences, about 60 words in total, describing a rocky "
+             "coastal landscape at dusk with a white lighthouse on the headland, low grey "
+             "clouds, and a calm grey-blue sea seen from a low cliff. Use the present tense "
+             "and plain declarative sentences. Describe only what is visible. Do not add a "
+             "title, a preamble, or a closing remark."},
+    {"id": "object_r1", "family": "object", "rung": 1, "text": "Describe a teapot."},
+    {"id": "object_r2", "family": "object", "rung": 2, "text": "Describe a ceramic teapot."},
+    {"id": "object_r3", "family": "object", "rung": 3,
+     "text": "Describe a blue ceramic teapot on a table."},
+    {"id": "object_r4", "family": "object", "rung": 4,
+     "text": "Write a short paragraph describing a blue ceramic teapot centred on a plain "
+             "white table."},
+    {"id": "object_r5", "family": "object", "rung": 5,
+     "text": "Write a short paragraph of about 60 words describing a blue ceramic teapot "
+             "centred on a plain white table under soft frontal studio lighting."},
+    {"id": "object_r6", "family": "object", "rung": 6,
+     "text": "Write exactly three sentences, about 60 words in total, describing a single "
+             "blue ceramic teapot centred on a plain white seamless backdrop under soft "
+             "frontal studio lighting. Use the present tense and plain declarative "
+             "sentences. Describe only the teapot and the backdrop. Do not add a title, "
+             "a preamble, or a closing remark."},
+]
+
+
 @dataclass
 class ImageParams:
     """Generation settings held constant across the whole image sweep."""
@@ -185,6 +267,20 @@ class StudyConfig:
             ids = [p["id"] for p in prompts]
             if len(set(ids)) != len(ids):
                 raise ValueError(f"duplicate {label} prompt ids")
+
+
+def ladder_config(out_dir: str = "runs/ladder") -> StudyConfig:
+    """The lean study: one sweep that carries every analysis.
+
+    6 rungs x 2 families x 2 models x 20 seeds = 480 artifacts per modality. The
+    same sweep feeds the variance decomposition, the specificity floor curve, the
+    seed-signature test, and the intent-legibility classifier.
+    """
+    cfg = StudyConfig(name="ladder", out_dir=out_dir)
+    cfg.seeds = list(range(1, 21))
+    cfg.image_prompts = [dict(p) for p in LADDER_IMAGE_PROMPTS]
+    cfg.text_prompts = [dict(p) for p in LADDER_TEXT_PROMPTS]
+    return cfg
 
 
 def pilot_config(out_dir: str = "runs/pilot") -> StudyConfig:

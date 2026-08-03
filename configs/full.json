@@ -1,0 +1,116 @@
+{
+  "caption_images": true,
+  "embed_model": "nomic-ai/nomic-embed-text-v1.5",
+  "image_models": [
+    "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0",
+    "accounts/fireworks/models/playground-v2-1024px-aesthetic"
+  ],
+  "image_params": {
+    "cfg_scale": 7,
+    "height": 1024,
+    "negative_prompt": "",
+    "sampler": null,
+    "steps": 30,
+    "width": 1024
+  },
+  "image_prompts": [
+    {
+      "id": "loose_landscape",
+      "specificity": "loose",
+      "text": "a landscape"
+    },
+    {
+      "id": "loose_portrait",
+      "specificity": "loose",
+      "text": "a portrait of a person"
+    },
+    {
+      "id": "mid_lighthouse",
+      "specificity": "mid",
+      "text": "a lighthouse on a rocky coast at dusk"
+    },
+    {
+      "id": "mid_market",
+      "specificity": "mid",
+      "text": "a busy street market in the rain, neon signs"
+    },
+    {
+      "id": "tight_teapot",
+      "specificity": "tight",
+      "text": "a single blue ceramic teapot centred on a white seamless backdrop, soft frontal studio lighting, no other objects, product photograph, sharp focus, eye-level camera"
+    },
+    {
+      "id": "tight_diagram",
+      "specificity": "tight",
+      "text": "a flat vector diagram of a red circle directly above a black square on a plain white background, thick uniform outlines, no text, no shading"
+    }
+  ],
+  "max_workers": 8,
+  "name": "seed-study",
+  "out_dir": "runs/default",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20
+  ],
+  "text_models": [
+    "accounts/fireworks/models/llama-v3p1-8b-instruct",
+    "accounts/fireworks/models/qwen2p5-7b-instruct"
+  ],
+  "text_params": {
+    "max_tokens": 400,
+    "system": null,
+    "temperature": 1.0,
+    "top_p": 1.0
+  },
+  "text_prompts": [
+    {
+      "id": "loose_landscape",
+      "specificity": "loose",
+      "text": "Describe a landscape."
+    },
+    {
+      "id": "loose_portrait",
+      "specificity": "loose",
+      "text": "Describe a person."
+    },
+    {
+      "id": "mid_lighthouse",
+      "specificity": "mid",
+      "text": "Write a short paragraph about a lighthouse on a rocky coast at dusk."
+    },
+    {
+      "id": "mid_market",
+      "specificity": "mid",
+      "text": "Write a short paragraph about a busy street market in the rain."
+    },
+    {
+      "id": "tight_teapot",
+      "specificity": "tight",
+      "text": "Write exactly three sentences describing a single blue ceramic teapot on a white background. Mention only the teapot. Use plain declarative sentences in the present tense. Do not add a title or any preamble."
+    },
+    {
+      "id": "tight_diagram",
+      "specificity": "tight",
+      "text": "Describe, in exactly two sentences, a diagram showing a red circle directly above a black square on a white background. State the shapes, their colours, and their relative positions and nothing else."
+    }
+  ],
+  "vision_model": "accounts/fireworks/models/qwen2p5-vl-32b-instruct"
+}

@@ -383,6 +383,246 @@ def _bootstrap_ratio(Z, a, b, n_a, n_b, n, n_boot, rng, observed_ratio) -> tuple
     return (lo, hi)
 
 
+# --- experiment 1: does the seed have a signature? ------------------------
+
+
+@dataclass
+class SeedSignature:
+    """Result of testing whether a seed value carries a consistent cross-prompt effect."""
+
+    view: str
+    model: str
+    n_prompts: int
+    n_seeds: int
+    eta2_seed: float          # share of variance the seed main effect explains
+    eta2_prompt: float
+    f_stat: float             # MS_seed / MS_residual, residual = prompt x seed
+    p_perm: float
+    top_features: list[dict] = field(default_factory=list)
+
+    def to_dict(self) -> dict:
+        return {
+            "view": self.view, "model": self.model, "n_prompts": self.n_prompts,
+            "n_seeds": self.n_seeds, "eta2_seed": self.eta2_seed,
+            "eta2_prompt": self.eta2_prompt, "f_stat": self.f_stat,
+            "p_perm": self.p_perm, "top_features": self.top_features,
+        }
+
+
+def seed_signature(
+    X: np.ndarray,
+    prompt_ids: list[str],
+    seed_ids: list[int],
+    feature_names: list[str] | None = None,
+    view: str = "view",
+    model: str = "all",
+    normalize_rows: bool = False,
+    n_perm: int = 999,
+    random_state: int = 0,
+    top_k: int = 6,
+) -> SeedSignature:
+    """Test the assumption the main decomposition rests on.
+
+    The decomposition treats seed as a replicate: seed 7 for prompt A is assumed
+    to have nothing in common with seed 7 for prompt B. That is an assumption,
+    and it is testable — the same seed list is run against every prompt, giving a
+    fully crossed prompt x seed grid with one observation per cell.
+
+    With no replication, the prompt x seed interaction is the error term (the
+    standard randomised-block layout), so:
+
+        SS_total = SS_prompt + SS_seed + SS_residual
+        F = MS_seed / MS_residual
+
+    If the seed effect is real, the seed is not noise — it is a style, applied
+    consistently on top of whatever was asked for. That is a much stronger claim
+    than "outputs vary", and it makes "uncredited collaborator" literal rather
+    than figurative.
+
+    Run this per generative model: seeds mean different things to different
+    samplers, and pooling would let a model effect masquerade as a seed effect.
+    """
+    rng = np.random.default_rng(random_state)
+    Z = preprocess(X, normalize_rows=normalize_rows)
+    a, prompts = _codes(prompt_ids)
+    s, seeds = _codes(seed_ids)
+    n_a, n_s = len(prompts), len(seeds)
+    if n_a < 2 or n_s < 2:
+        raise ValueError("need >= 2 prompts and >= 2 seeds to test for a seed signature")
+    if Z.shape[0] != n_a * n_s:
+        raise ValueError(
+            f"expected a complete {n_a} x {n_s} prompt-by-seed grid "
+            f"({n_a * n_s} rows), got {Z.shape[0]}"
+        )
+
+    def two_way_no_rep(Z, a, s):
+        grand = Z.mean(axis=0)
+        am = np.vstack([Z[a == i].mean(axis=0) for i in range(n_a)])
+        sm = np.vstack([Z[s == k].mean(axis=0) for k in range(n_s)])
+        ss_total = float(((Z - grand) ** 2).sum())
+        ss_a = float(n_s * ((am - grand) ** 2).sum())
+        ss_s = float(n_a * ((sm - grand) ** 2).sum())
+        return ss_total, ss_a, ss_s, ss_total - ss_a - ss_s
+
+    ss_total, ss_a, ss_s, ss_res = two_way_no_rep(Z, a, s)
+    df_s, df_res = n_s - 1, (n_a - 1) * (n_s - 1)
+    ms_s, ms_res = ss_s / df_s, ss_res / max(df_res, 1)
+    f_stat = ms_s / ms_res if ms_res > 0 else float("inf")
+
+    # Under the null the seed labels are exchangeable across prompts, so shuffle
+    # them independently within each prompt — that breaks any cross-prompt
+    # consistency while leaving each prompt's own spread untouched.
+    ge = 0
+    for _ in range(n_perm):
+        ps = s.copy()
+        for i in range(n_a):
+            m = a == i
+            ps[m] = rng.permutation(ps[m])
+        if two_way_no_rep(Z, a, ps)[2] >= ss_s:
+            ge += 1
+    p_perm = (ge + 1) / (n_perm + 1) if n_perm else float("nan")
+
+    # Which features does the seed act on? Per-dimension seed eta-squared, so the
+    # effect can be described ("seed 3 runs consistently darker") rather than
+    # only detected.
+    top: list[dict] = []
+    if feature_names is not None and len(feature_names) == X.shape[1]:
+        sd = X.std(axis=0, ddof=0)
+        keep = np.flatnonzero(sd > 1e-12)
+        names = [feature_names[i] for i in keep]
+        grand = Z.mean(axis=0)
+        sm = np.vstack([Z[s == k].mean(axis=0) for k in range(n_s)])
+        ss_s_dim = n_a * ((sm - grand) ** 2).sum(axis=0)
+        ss_t_dim = ((Z - grand) ** 2).sum(axis=0)
+        eta_dim = np.divide(ss_s_dim, ss_t_dim, out=np.zeros_like(ss_s_dim), where=ss_t_dim > 0)
+        for j in np.argsort(eta_dim)[::-1][:top_k]:
+            col = sm[:, j]
+            top.append(
+                {
+                    "feature": names[j],
+                    "eta2_seed": float(eta_dim[j]),
+                    "strongest_seed": str(seeds[int(np.argmax(np.abs(col)))]),
+                    "seed_effect_sd": float(col.std(ddof=0)),
+                }
+            )
+
+    return SeedSignature(
+        view=view,
+        model=model,
+        n_prompts=n_a,
+        n_seeds=n_s,
+        eta2_seed=ss_s / ss_total if ss_total else 0.0,
+        eta2_prompt=ss_a / ss_total if ss_total else 0.0,
+        f_stat=f_stat,
+        p_perm=p_perm,
+        top_features=top,
+    )
+
+
+# --- experiment 2: the specificity floor ----------------------------------
+
+
+def rung_curve(
+    X: np.ndarray,
+    prompt_ids: list[str],
+    model_ids: list[str],
+    seeds: list[int],
+    rungs: list[int],
+    families: list[str],
+    normalize_rows: bool = False,
+    n_boot: int = 500,
+    random_state: int = 0,
+) -> dict:
+    """How much randomness does specification actually remove — and does it hit a floor?
+
+    Seed variance is measured per rung as pooled within-cell variance, where a
+    cell is (prompt, model). Features are standardised ONCE across all rungs, so
+    the rungs sit in a common space and their variances are directly comparable.
+
+    Note what this deliberately does not do: it never divides by prompt variance.
+    A ratio would reintroduce the dependence on which prompts were chosen. The
+    claim here is absolute — 'going from 3 words to 35 removes X% of the
+    randomness, and the remainder is what specification cannot buy back'.
+    """
+    rng = np.random.default_rng(random_state)
+    Z = preprocess(X, normalize_rows=normalize_rows)
+    rungs = [int(r) for r in rungs]
+    cells: dict[tuple, list[int]] = {}
+    for idx, (p, m) in enumerate(zip(prompt_ids, model_ids)):
+        cells.setdefault((p, m), []).append(idx)
+
+    rung_of = {}
+    family_of = {}
+    for p, r, f in zip(prompt_ids, rungs, families):
+        rung_of[p] = r
+        family_of[p] = f
+
+    per_rung: dict[int, list[float]] = {}
+    per_rung_dist: dict[int, list[float]] = {}
+    per_rung_cells: dict[int, list[np.ndarray]] = {}
+    for (p, m), idx in cells.items():
+        cell = Z[idx]
+        if len(cell) < 2:
+            continue
+        # Mean squared deviation from the cell centroid, per artifact AND per
+        # feature dimension. Dividing by the dimension count keeps the number
+        # readable and comparable across views of different widths: 1.0 means
+        # "as spread out as the whole dataset is".
+        var = float(((cell - cell.mean(axis=0)) ** 2).sum() / (len(cell) - 1) / Z.shape[1])
+        d = np.linalg.norm(cell[:, None, :] - cell[None, :, :], axis=-1)
+        iu = np.triu_indices(len(cell), k=1)
+        per_rung.setdefault(rung_of[p], []).append(var)
+        per_rung_dist.setdefault(rung_of[p], []).append(float(d[iu].mean()))
+        per_rung_cells.setdefault(rung_of[p], []).append(np.asarray(idx))
+
+    ordered = sorted(per_rung)
+    base = float(np.mean(per_rung[ordered[0]])) if ordered else float("nan")
+
+    rows = []
+    for r in ordered:
+        vals = np.array(per_rung[r], dtype=np.float64)
+        # Bootstrap over seeds within cell, which is the replication the claim uses.
+        boot = []
+        for _ in range(n_boot):
+            v = []
+            for idx in per_rung_cells[r]:
+                take = idx[rng.integers(0, len(idx), len(idx))]
+                cell = Z[take]
+                v.append(
+                    float(
+                        ((cell - cell.mean(axis=0)) ** 2).sum()
+                        / max(len(cell) - 1, 1)
+                        / Z.shape[1]
+                    )
+                )
+            boot.append(np.mean(v))
+        lo, hi = (
+            (float(np.percentile(boot, 2.5)), float(np.percentile(boot, 97.5)))
+            if n_boot
+            else (float("nan"), float("nan"))
+        )
+        rows.append(
+            {
+                "rung": r,
+                "n_cells": len(vals),
+                "seed_variance": float(vals.mean()),
+                "ci_lo": lo,
+                "ci_hi": hi,
+                "mean_within_cell_distance": float(np.mean(per_rung_dist[r])),
+                "fraction_of_rung1": float(vals.mean() / base) if base else float("nan"),
+            }
+        )
+
+    removed = 1.0 - rows[-1]["fraction_of_rung1"] if len(rows) > 1 else float("nan")
+    return {
+        "rows": rows,
+        "n_rungs": len(rows),
+        "floor_fraction": rows[-1]["fraction_of_rung1"] if rows else float("nan"),
+        "randomness_removed": removed,
+        "families": sorted(set(families)),
+    }
+
+
 def compare_modalities(decomps: dict[str, Decomposition]) -> dict:
     """Line the modalities up on the shares, which are scale-free and comparable.
 

@@ -19,7 +19,7 @@ import io
 import json
 import re
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import numpy as np
@@ -160,6 +160,21 @@ class FeatureView:
     model_ids: list[str]
     seeds: list[int]
     feature_names: list[str]
+    # Ladder metadata. Zero / "na" when the design isn't a ladder, which is what
+    # the rung-based analyses check before running.
+    rungs: list[int] = field(default_factory=list)
+    families: list[str] = field(default_factory=list)
+
+    def __post_init__(self):
+        n = self.X.shape[0]
+        if not self.rungs:
+            self.rungs = [0] * n
+        if not self.families:
+            self.families = ["na"] * n
+
+    @property
+    def is_ladder(self) -> bool:
+        return len(set(self.rungs)) > 1
 
     def save(self, path: str | Path) -> None:
         p = Path(path)
@@ -171,6 +186,8 @@ class FeatureView:
             model_ids=np.array(self.model_ids),
             seeds=np.array(self.seeds),
             feature_names=np.array(self.feature_names),
+            rungs=np.array(self.rungs),
+            families=np.array(self.families),
             meta=np.array([json.dumps({"name": self.name, "modality": self.modality})]),
         )
 
@@ -186,6 +203,8 @@ class FeatureView:
             model_ids=[str(x) for x in z["model_ids"]],
             seeds=[int(x) for x in z["seeds"]],
             feature_names=[str(x) for x in z["feature_names"]],
+            rungs=[int(x) for x in z["rungs"]] if "rungs" in z else [],
+            families=[str(x) for x in z["families"]] if "families" in z else [],
         )
 
 
@@ -216,6 +235,8 @@ def build_views(
             [r["prompt_id"] for r in rows],
             [r["model"] for r in rows],
             [int(r["seed"]) for r in rows],
+            [int(r.get("rung", 0)) for r in rows],
+            [str(r.get("family", "na")) for r in rows],
         )
 
     if img_rows:
@@ -223,9 +244,9 @@ def build_views(
             progress(f"image: low-level features for {len(img_rows)} artifacts")
         blobs = [(root / r["path"]).read_bytes() for r in img_rows]
         X = np.vstack([image_lowlevel(b) for b in blobs])
-        p, m, s = labels(img_rows)
+        p, m, s, rg, fam = labels(img_rows)
         views["image_lowlevel"] = FeatureView(
-            "image_lowlevel", "image", X, p, m, s, image_lowlevel_names()
+            "image_lowlevel", "image", X, p, m, s, image_lowlevel_names(), rg, fam
         )
 
         if caption_images:
@@ -245,7 +266,8 @@ def build_views(
                 progress("image: embedding captions")
             E = np.asarray(client.embed(captions, model=embed_model), dtype=np.float64)
             views["image_semantic"] = FeatureView(
-                "image_semantic", "image", E, p, m, s, [f"e{i}" for i in range(E.shape[1])]
+                "image_semantic", "image", E, p, m, s,
+                [f"e{i}" for i in range(E.shape[1])], rg, fam
             )
 
     if txt_rows:
@@ -253,15 +275,16 @@ def build_views(
             progress(f"text: lexical features for {len(txt_rows)} artifacts")
         texts = [(root / r["path"]).read_text() for r in txt_rows]
         X = np.vstack([text_lexical(t) for t in texts])
-        p, m, s = labels(txt_rows)
+        p, m, s, rg, fam = labels(txt_rows)
         views["text_lexical"] = FeatureView(
-            "text_lexical", "text", X, p, m, s, text_lexical_names()
+            "text_lexical", "text", X, p, m, s, text_lexical_names(), rg, fam
         )
         if progress:
             progress("text: embedding generations")
         E = np.asarray(client.embed(texts, model=embed_model), dtype=np.float64)
         views["text_semantic"] = FeatureView(
-            "text_semantic", "text", E, p, m, s, [f"e{i}" for i in range(E.shape[1])]
+            "text_semantic", "text", E, p, m, s,
+            [f"e{i}" for i in range(E.shape[1])], rg, fam
         )
 
     return views

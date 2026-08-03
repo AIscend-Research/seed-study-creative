@@ -178,6 +178,167 @@ def _table(decomps: dict[str, Decomposition]) -> str:
     )
 
 
+def _floor_chart(curves: dict) -> str:
+    """Seed variance against specificity rung — change over an ordered x, so a line.
+
+    The story is the shape, not the levels: if the curves flatten above zero,
+    specification has a limit and the flat part is what prompting cannot buy.
+    """
+    if not curves:
+        return ""
+    views = sorted(curves)
+    left, right, top, bottom = 56, 150, 20, 40
+    width, height = 900, 330
+    plot_w, plot_h = width - left - right, height - top - bottom
+
+    all_rows = [r for v in views for r in curves[v]["rows"]]
+    rungs = sorted({r["rung"] for r in all_rows})
+    ymax = max([r["ci_hi"] if r["ci_hi"] == r["ci_hi"] else r["seed_variance"] for r in all_rows] + [0])
+    ymax = ymax * 1.12 or 1.0
+
+    def px(rung):
+        i = rungs.index(rung)
+        return left + (i / max(len(rungs) - 1, 1)) * plot_w
+
+    def py(v):
+        return top + plot_h - (v / ymax) * plot_h
+
+    parts = [
+        f'<svg viewBox="0 0 {width} {height}" role="img" width="100%" '
+        f'aria-label="Seed variance by prompt specificity rung">'
+    ]
+    for frac in (0, 0.25, 0.5, 0.75, 1.0):
+        y = top + plot_h - frac * plot_h
+        parts.append(
+            f'<line x1="{left}" y1="{y:.1f}" x2="{left + plot_w}" y2="{y:.1f}" class="grid"/>'
+            f'<text x="{left - 8}" y="{y + 4:.1f}" class="tick" text-anchor="end">'
+            f"{frac * ymax:.2f}</text>"
+        )
+    for r in rungs:
+        parts.append(
+            f'<text x="{px(r):.1f}" y="{height - 18}" class="tick" text-anchor="middle">'
+            f"rung {r}</text>"
+        )
+    # End-of-line labels collide when two views land at similar variance, so
+    # place them first and push overlapping ones apart before drawing.
+    ends = sorted(
+        (
+            (sorted(curves[v]["rows"], key=lambda r: r["rung"])[-1]["seed_variance"], v)
+            for v in views
+        ),
+        key=lambda t: -t[0],
+    )
+    label_y: dict[str, float] = {}
+    prev = -1e9
+    for value, view in ends:
+        y = max(py(value), prev + 14)
+        label_y[view] = y
+        prev = y
+
+    for k, view in enumerate(views):
+        slot = SOURCES[k % len(SOURCES)]
+        colour = f'var(--c-{slot.replace(":", "-")})'
+        rows = sorted(curves[view]["rows"], key=lambda r: r["rung"])
+        band = " ".join(f"{px(r['rung']):.1f},{py(r['ci_hi']):.1f}" for r in rows if r["ci_hi"] == r["ci_hi"])
+        band2 = " ".join(
+            f"{px(r['rung']):.1f},{py(r['ci_lo']):.1f}" for r in reversed(rows) if r["ci_lo"] == r["ci_lo"]
+        )
+        if band and band2:
+            parts.append(f'<polygon points="{band} {band2}" fill="{colour}" opacity="0.13"/>')
+        pts = " ".join(f"{px(r['rung']):.1f},{py(r['seed_variance']):.1f}" for r in rows)
+        parts.append(f'<polyline points="{pts}" fill="none" stroke="{colour}" stroke-width="2"/>')
+        for r in rows:
+            parts.append(
+                f'<circle cx="{px(r["rung"]):.1f}" cy="{py(r["seed_variance"]):.1f}" r="4" '
+                f'fill="{colour}" stroke="var(--surface-1)" stroke-width="2">'
+                f'<title>{html.escape(view)} rung {r["rung"]}: seed variance '
+                f'{r["seed_variance"]:.3f} ({_pct(r["fraction_of_rung1"])} of rung 1)</title></circle>'
+            )
+        last = rows[-1]
+        ly = label_y[view]
+        parts.append(
+            f'<line x1="{px(last["rung"]):.1f}" y1="{py(last["seed_variance"]):.1f}" '
+            f'x2="{px(last["rung"]) + 8:.1f}" y2="{ly:.1f}" stroke="{colour}" '
+            f'stroke-width="1" opacity="0.5"/>'
+            f'<text x="{px(last["rung"]) + 12:.1f}" y="{ly + 4:.1f}" '
+            f'class="rowsub">{html.escape(view)}</text>'
+        )
+    parts.append(
+        f'<text x="{left}" y="{top - 6}" class="rowsub">seed variance (standardised units)</text></svg>'
+    )
+    return "".join(parts)
+
+
+def _legibility_chart(legs: dict) -> str:
+    """Recovery accuracy per view against its chance line — one measure, one axis."""
+    if not legs:
+        return ""
+    views = sorted(legs, key=lambda v: (legs[v].modality, v))
+    left, right, top, row_h = 168, 60, 16, 38
+    width = 900
+    plot_w = width - left - right
+    height = top + len(views) * row_h + 34
+
+    parts = [
+        f'<svg viewBox="0 0 {width} {height}" role="img" width="100%" '
+        f'aria-label="Prompt-recovery accuracy per feature view against chance">'
+    ]
+    for frac in (0, 0.25, 0.5, 0.75, 1.0):
+        x = left + frac * plot_w
+        parts.append(
+            f'<line x1="{x:.1f}" y1="{top - 6}" x2="{x:.1f}" y2="{height - 30}" class="grid"/>'
+            f'<text x="{x:.1f}" y="{height - 14}" class="tick" text-anchor="middle">'
+            f"{int(frac * 100)}%</text>"
+        )
+    for r, view in enumerate(views):
+        leg = legs[view]
+        y = top + r * row_h
+        parts.append(f'<text x="0" y="{y + 20}" class="rowlab">{html.escape(view)}</text>')
+        w = max(leg.accuracy * plot_w - 2, 0.5)
+        cx = left + leg.chance * plot_w
+        # Clear the chance line so a short bar's value label doesn't sit on it.
+        label_x = max(left + w + 8, cx + 10)
+        parts.append(
+            f'<rect x="{left}" y="{y + 6}" width="{w:.1f}" height="18" rx="2" '
+            f'fill="var(--c-seed)"><title>{html.escape(view)}: recovered '
+            f"{_pct(leg.accuracy)} of the time, chance {_pct(leg.chance)}</title></rect>"
+            f'<line x1="{cx:.1f}" y1="{y + 2}" x2="{cx:.1f}" y2="{y + 28}" class="ref"/>'
+            f'<text x="{label_x:.1f}" y="{y + 20}" class="rowsub">{_pct(leg.accuracy)}</text>'
+        )
+    parts.append(
+        f'<text x="{left}" y="{height - 2}" class="rowsub">'
+        "dashed line marks chance for that view&#8217;s prompt count</text></svg>"
+    )
+    return "".join(parts)
+
+
+def _signature_table(signatures: dict) -> str:
+    rows = []
+    for view in sorted(signatures):
+        for sig in signatures[view]:
+            feats = ", ".join(f["feature"] for f in sig.top_features[:3]) or "—"
+            rows.append(
+                "<tr>"
+                f"<td>{html.escape(view)}</td>"
+                f"<td>{html.escape(sig.model.split('/')[-1])}</td>"
+                f"<td class='num'>{_pct(sig.eta2_seed)}</td>"
+                f"<td class='num'>{_pct(sig.eta2_prompt)}</td>"
+                f"<td class='num'>{_fmt(sig.f_stat, 2)}</td>"
+                f"<td class='num'>{_fmt(sig.p_perm)}</td>"
+                f"<td>{html.escape(feats)}</td>"
+                "</tr>"
+            )
+    if not rows:
+        return "<p class='muted'>No seed-signature tests were run.</p>"
+    return (
+        "<table><thead><tr><th>view</th><th>model</th><th>&eta;&sup2; seed</th>"
+        "<th>&eta;&sup2; prompt</th><th>F</th><th>p (perm)</th>"
+        "<th>features the seed acts on</th></tr></thead><tbody>"
+        + "".join(rows)
+        + "</tbody></table>"
+    )
+
+
 CSS = """
 :root { color-scheme: light dark; }
 .viz-root {
@@ -203,8 +364,9 @@ p, li { color:var(--text-secondary); max-width:74ch; }
 .lede { color:var(--text-primary); }
 .headline { font-size:44px; font-weight:650; letter-spacing:-0.02em; margin:8px 0 0; }
 .headline small { display:block; font-size:14px; font-weight:400; color:var(--text-secondary); }
-.tiles { display:flex; flex-wrap:wrap; gap:28px; margin:20px 0 8px; }
-.tile { min-width:180px; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:24px 28px; margin:20px 0 8px; }
+.tile { min-width:0; }
 figure { margin:0 0 8px; }
 figcaption { font-size:13px; color:var(--text-secondary); margin-top:6px; }
 .rowlab { fill:var(--text-primary); font-size:13px; font-weight:550; }
@@ -228,7 +390,74 @@ td.num { text-align:right; font-variant-numeric:tabular-nums; }
 """
 
 
-def render_html(decomps: dict[str, Decomposition], comparison: dict, meta: dict) -> str:
+def _experiment_sections(signatures: dict, legibilities: dict, curves: dict) -> str:
+    out = []
+
+    if curves:
+        floors = [
+            f"{v}: {_pct(c['floor_fraction'])}" for v, c in sorted(curves.items())
+        ]
+        out.append(
+            "<h2>Does specification have a floor?</h2>"
+            "<p>Each rung adds constraints to the rung below it and changes nothing else, "
+            "so the curve isolates what specification buys. Seed variance retained at the "
+            f"top rung, relative to a three-word prompt: {'; '.join(floors)}. Whatever the "
+            "curve flattens to is the randomness prompting cannot remove.</p>"
+            f"<figure>{_floor_chart(curves)}"
+            "<figcaption>Line is mean within-cell seed variance in standardised units; band "
+            "is the 95% bootstrap interval over seeds. Features are standardised once across "
+            "all rungs, so the rungs share a space and the levels are comparable. No prompt "
+            "variance appears in this figure — the claim is absolute, so it does not depend "
+            "on which prompts were chosen.</figcaption></figure>"
+        )
+
+    if legibilities:
+        best = max(legibilities.values(), key=lambda l: l.accuracy)
+        out.append(
+            "<h2>Can the prompt be recovered from the artifact?</h2>"
+            "<p>A leave-one-out nearest-centroid classifier predicts which prompt produced "
+            "each output, run within a generative model so model identity cannot leak in as "
+            f"a cue. Best view recovers the prompt {_pct(best.accuracy)} of the time against "
+            f"chance of {_pct(best.chance)}. Specification that cannot be read back off the "
+            "work is specification that did not survive into it.</p>"
+            f"<figure>{_legibility_chart(legibilities)}</figure>"
+        )
+        rungs = [l for l in legibilities.values() if l.per_rung]
+        if rungs:
+            cells = []
+            for l in sorted(rungs, key=lambda x: x.view):
+                acc = ", ".join(f"r{r['rung']} {_pct(r['accuracy'])}" for r in l.per_rung)
+                cells.append(f"<li><strong>{html.escape(l.view)}</strong> — {acc}</li>")
+            out.append(
+                "<p>Legibility by rung — whether adding words makes intent more readable:</p>"
+                f"<ul>{''.join(cells)}</ul>"
+            )
+
+    out.append(
+        "<h2>Is the seed noise, or a style?</h2>"
+        "<p>The decomposition treats the seed as a replicate: seed 7 for one prompt is "
+        "assumed to share nothing with seed 7 for another. That assumption is testable, "
+        "because the same seeds run against every prompt. Prompt and seed form a complete "
+        "crossed grid with one artifact per cell, so the prompt&times;seed interaction is "
+        "the error term and F = MS<sub>seed</sub> / MS<sub>residual</sub>. A seed effect "
+        "that survives is not noise — it is a consistent hand, applied on top of whatever "
+        "was asked for.</p>"
+        f"<div class='tblwrap'>{_signature_table(signatures)}</div>"
+        "<p class='muted'>Seed labels are permuted independently within each prompt, which "
+        "breaks cross-prompt consistency while leaving each prompt&#8217;s own spread intact. "
+        "A null result here supports the main decomposition rather than undermining it.</p>"
+    )
+    return "".join(out)
+
+
+def render_html(
+    decomps: dict[str, Decomposition],
+    comparison: dict,
+    meta: dict,
+    signatures: dict | None = None,
+    legibilities: dict | None = None,
+    curves: dict | None = None,
+) -> str:
     legend = "".join(
         f'<span><i class="swatch" style="background:var(--c-{s.replace(":", "-")})"></i>'
         f"{LABELS[s]}</span>"
@@ -279,6 +508,8 @@ scale-free, which is what makes the image and text rows comparable.</figcaption>
 (resampling prompts and seeds). Intervals that straddle 1.0 do not establish
 seed dominance for that view.</figcaption></figure>
 
+{_experiment_sections(signatures or {}, legibilities or {}, curves or {})}
+
 <h2>Full decomposition</h2>
 <div class="tblwrap">{_table(decomps)}</div>
 <p class="muted">&eta;&sup2; is the share of variance in this sample and is inflated for
@@ -306,7 +537,14 @@ permutation test: it is the residual stratum, with no labels to shuffle.</p>
 </div></body></html>"""
 
 
-def render_markdown(decomps: dict[str, Decomposition], comparison: dict, meta: dict) -> str:
+def render_markdown(
+    decomps: dict[str, Decomposition],
+    comparison: dict,
+    meta: dict,
+    signatures: dict | None = None,
+    legibilities: dict | None = None,
+    curves: dict | None = None,
+) -> str:
     lines = ["# Seed study — results", ""]
     lines.append(f"Run: `{meta.get('run', '?')}` · {meta.get('n_artifacts', '?')} artifacts")
     lines.append("")
@@ -321,6 +559,42 @@ def render_markdown(decomps: dict[str, Decomposition], comparison: dict, meta: d
             f"{_pct(d.var_share['prompt:model'])} | {_fmt(d.seed_to_prompt, 2)} | "
             f"{_fmt(lo, 2)}–{_fmt(hi, 2)} | {_fmt(d.p_seed_beats_prompt, 2)} |"
         )
+    if curves:
+        lines += ["", "## Specificity floor (seed variance by rung)", ""]
+        lines.append("| view | " + " | ".join(
+            f"r{r['rung']}" for r in sorted(next(iter(curves.values()))["rows"], key=lambda x: x["rung"])
+        ) + " | retained at top |")
+        lines.append("|---" * (len(next(iter(curves.values()))["rows"]) + 2) + "|")
+        for view, c in sorted(curves.items()):
+            vals = " | ".join(
+                _pct(r["fraction_of_rung1"]) for r in sorted(c["rows"], key=lambda x: x["rung"])
+            )
+            lines.append(f"| {view} | {vals} | **{_pct(c['floor_fraction'])}** |")
+        lines.append("")
+        lines.append("Values are seed variance as a fraction of the three-word prompt's.")
+
+    if legibilities:
+        lines += ["", "## Intent legibility (prompt recovered from artifact)", ""]
+        lines.append("| view | accuracy | chance | lift | 95% CI |")
+        lines.append("|---|---|---|---|---|")
+        for view, l in sorted(legibilities.items()):
+            lines.append(
+                f"| {view} | {_pct(l.accuracy)} | {_pct(l.chance)} | {_pct(l.lift)} | "
+                f"{_pct(l.ci_lo)}–{_pct(l.ci_hi)} |"
+            )
+
+    if signatures:
+        lines += ["", "## Seed signature (is the seed a style?)", ""]
+        lines.append("| view | model | eta2 seed | eta2 prompt | F | p | acts on |")
+        lines.append("|---|---|---|---|---|---|---|")
+        for view in sorted(signatures):
+            for sig in signatures[view]:
+                feats = ", ".join(f["feature"] for f in sig.top_features[:3]) or "—"
+                lines.append(
+                    f"| {view} | {sig.model.split('/')[-1]} | {_pct(sig.eta2_seed)} | "
+                    f"{_pct(sig.eta2_prompt)} | {_fmt(sig.f_stat, 2)} | {_fmt(sig.p_perm)} | {feats} |"
+                )
+
     sem = comparison.get("semantic_pair")
     if sem:
         lines += [
@@ -350,6 +624,9 @@ def write_report(
     decomps: dict[str, Decomposition],
     comparison: dict,
     meta: dict,
+    signatures: dict | None = None,
+    legibilities: dict | None = None,
+    curves: dict | None = None,
 ) -> dict[str, Path]:
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -358,14 +635,23 @@ def write_report(
         "markdown": out / "report.md",
         "json": out / "results.json",
     }
-    paths["html"].write_text(render_html(decomps, comparison, meta))
-    paths["markdown"].write_text(render_markdown(decomps, comparison, meta))
+    paths["html"].write_text(
+        render_html(decomps, comparison, meta, signatures, legibilities, curves)
+    )
+    paths["markdown"].write_text(
+        render_markdown(decomps, comparison, meta, signatures, legibilities, curves)
+    )
     paths["json"].write_text(
         json.dumps(
             {
                 "meta": meta,
                 "decompositions": {k: v.to_dict() for k, v in decomps.items()},
                 "comparison": comparison,
+                "seed_signatures": {
+                    k: [s.to_dict() for s in v] for k, v in (signatures or {}).items()
+                },
+                "legibility": {k: v.to_dict() for k, v in (legibilities or {}).items()},
+                "specificity_floor": curves or {},
             },
             indent=2,
         )

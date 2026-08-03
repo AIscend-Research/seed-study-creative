@@ -15,11 +15,18 @@ import time
 from pathlib import Path
 
 from .client import FireworksClient, MockClient
-from .config import StudyConfig, pilot_config
+from .config import StudyConfig, ladder_config, pilot_config
 from .features import FeatureView, build_views
-from .generate import Manifest, check_balance, run_sweep
+from .generate import Manifest, check_balance, run_sweep, slug
 from .report import write_report
-from .variance import Decomposition, compare_modalities, decompose
+from .legibility import intent_legibility
+from .variance import (
+    Decomposition,
+    compare_modalities,
+    decompose,
+    rung_curve,
+    seed_signature,
+)
 
 # Semantic views live on the unit sphere, so row-normalise before measuring
 # distance; the surface views are already interpretable in their own units.
@@ -40,6 +47,8 @@ def _client(args) -> object:
 def _load_config(args) -> StudyConfig:
     if args.config:
         cfg = StudyConfig.load(args.config)
+    elif getattr(args, "ladder", False):
+        cfg = ladder_config(out_dir=args.out or "runs/ladder")
     elif args.pilot or args.mock:
         cfg = pilot_config(out_dir=args.out or "runs/pilot")
     else:
@@ -131,6 +140,65 @@ def cmd_analyze(args) -> int:
         _log("nothing decomposable — check design balance")
         return 1
 
+    # Experiment 1: is the seed a style rather than noise? Run per generative
+    # model — seeds mean different things to different samplers, and pooling
+    # would let a model effect pose as a seed effect.
+    signatures: dict[str, list] = {}
+    for name, v in sorted(views.items()):
+        for model in sorted(set(v.model_ids)):
+            mask = [i for i, m in enumerate(v.model_ids) if m == model]
+            try:
+                sig = seed_signature(
+                    v.X[mask],
+                    [v.prompt_ids[i] for i in mask],
+                    [v.seeds[i] for i in mask],
+                    feature_names=v.feature_names,
+                    view=name,
+                    model=model,
+                    normalize_rows=NORMALIZE_ROWS.get(name, False),
+                    n_perm=args.permutations,
+                    random_state=args.random_state,
+                )
+            except ValueError as exc:
+                _log(f"  seed signature skipped for {name}/{slug(model)}: {exc}")
+                continue
+            signatures.setdefault(name, []).append(sig)
+            _log(
+                f"  seed signature {name}/{slug(model)}: "
+                f"eta2={sig.eta2_seed:.3f} F={sig.f_stat:.2f} p={sig.p_perm:.3f}"
+            )
+
+    # Experiment 2: can the prompt be recovered from the artifact?
+    legibilities = {}
+    for name, v in sorted(views.items()):
+        leg = intent_legibility(
+            v.X, v.prompt_ids, v.model_ids,
+            rungs=v.rungs if v.is_ladder else None,
+            view=name, modality=v.modality,
+            normalize_rows=NORMALIZE_ROWS.get(name, False),
+            random_state=args.random_state,
+        )
+        legibilities[name] = leg
+        _log(f"  legibility {name}: {leg.accuracy:.3f} vs chance {leg.chance:.3f}")
+
+    # Experiment 3: the specificity floor. Only meaningful on a ladder design.
+    curves = {}
+    for name, v in sorted(views.items()):
+        if not v.is_ladder:
+            continue
+        curves[name] = rung_curve(
+            v.X, v.prompt_ids, v.model_ids, v.seeds, v.rungs, v.families,
+            normalize_rows=NORMALIZE_ROWS.get(name, False),
+            n_boot=args.bootstrap, random_state=args.random_state,
+        )
+        c = curves[name]
+        _log(
+            f"  floor {name}: rung {c['rows'][-1]['rung']} retains "
+            f"{c['floor_fraction']:.1%} of rung-1 seed variance"
+        )
+    if not curves:
+        _log("  no ladder metadata — skipping the specificity floor curve")
+
     comparison = compare_modalities(decomps)
     meta = {
         "run": str(root),
@@ -145,7 +213,10 @@ def cmd_analyze(args) -> int:
         "bootstrap": args.bootstrap,
         "balance": json.dumps(balance),
     }
-    paths = write_report(root, decomps, comparison, meta)
+    paths = write_report(
+        root, decomps, comparison, meta,
+        signatures=signatures, legibilities=legibilities, curves=curves,
+    )
     for k, p in paths.items():
         _log(f"wrote {k}: {p}")
 
@@ -163,8 +234,50 @@ def cmd_run(args) -> int:
     return cmd_analyze(args)
 
 
+def cmd_estimate(args) -> int:
+    """Count every API call the design implies, without making any of them.
+
+    Prices are not baked in — they drift, and a stale constant that reads as
+    authoritative is worse than no number. Pass --price-* to get a total.
+    """
+    cfg = _load_config(args)
+    cfg.validate()
+    counts = cfg.n_cells()
+    n_img, n_txt = counts["image"], counts["text"]
+    n_caption = n_img if cfg.caption_images else 0
+    n_embed = n_caption + n_txt
+
+    _log(f"design: {len(cfg.image_prompts)} image prompts x {len(cfg.image_models)} models "
+         f"x {len(cfg.seeds)} seeds = {n_img} images")
+    _log(f"        {len(cfg.text_prompts)} text prompts x {len(cfg.text_models)} models "
+         f"x {len(cfg.seeds)} seeds = {n_txt} generations")
+    _log(f"per-cell seeds: {len(cfg.seeds)} (df for the seed term: "
+         f"{len(cfg.image_prompts) * len(cfg.image_models) * (len(cfg.seeds) - 1)} image, "
+         f"{len(cfg.text_prompts) * len(cfg.text_models) * (len(cfg.seeds) - 1)} text)")
+    print()
+    print(f"  image generations   {n_img:>6}  ({cfg.image_params.steps} steps, "
+          f"{cfg.image_params.width}x{cfg.image_params.height})")
+    print(f"  text generations    {n_txt:>6}  (<= {cfg.text_params.max_tokens} output tokens each)")
+    print(f"  VLM captions        {n_caption:>6}")
+    print(f"  embedding calls     {n_embed:>6}  (batched 32/request -> "
+          f"{-(-n_embed // 32)} requests)")
+    print()
+
+    if args.price_image or args.price_text_mtok or args.price_caption:
+        img_cost = n_img * (args.price_image or 0.0)
+        txt_cost = n_txt * cfg.text_params.max_tokens / 1e6 * (args.price_text_mtok or 0.0)
+        cap_cost = n_caption * (args.price_caption or 0.0)
+        print(f"  estimated cost: ${img_cost + txt_cost + cap_cost:,.2f} "
+              f"(images ${img_cost:,.2f}, text ${txt_cost:,.2f}, captions ${cap_cost:,.2f})")
+        print("  embeddings not priced; text cost assumes every generation hits max_tokens.")
+    else:
+        print("  pass --price-image / --price-text-mtok / --price-caption for a cost total")
+    print("\nNothing was called. Run `generate` when you want to spend.")
+    return 0
+
+
 def cmd_init(args) -> int:
-    cfg = pilot_config() if args.pilot else StudyConfig()
+    cfg = ladder_config() if args.ladder else pilot_config() if args.pilot else StudyConfig()
     path = Path(args.output)
     cfg.save(path)
     _log(f"wrote {path} — {cfg.n_cells()}")
@@ -179,6 +292,8 @@ def build_parser() -> argparse.ArgumentParser:
         sp.add_argument("--config", help="path to a StudyConfig JSON file")
         sp.add_argument("--out", help="output run directory (overrides config)")
         sp.add_argument("--pilot", action="store_true", help="small cheap design")
+        sp.add_argument("--ladder", action="store_true",
+                        help="specificity-ladder design (6 rungs x 2 families)")
         sp.add_argument("--mock", action="store_true", help="offline synthetic backend")
         sp.add_argument("--seeds", type=int, help="use seeds 1..N")
         sp.add_argument("--workers", type=int, help="concurrent requests")
@@ -208,9 +323,17 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--refresh-features", action="store_true")
     r.set_defaults(func=cmd_run)
 
+    e = sub.add_parser("estimate", help="count the API calls the design implies — calls nothing")
+    common(e)
+    e.add_argument("--price-image", type=float, help="$ per image generation")
+    e.add_argument("--price-text-mtok", type=float, help="$ per 1M output tokens")
+    e.add_argument("--price-caption", type=float, help="$ per VLM caption call")
+    e.set_defaults(func=cmd_estimate)
+
     i = sub.add_parser("init", help="write a config file to edit")
     i.add_argument("--output", default="configs/study.json")
     i.add_argument("--pilot", action="store_true")
+    i.add_argument("--ladder", action="store_true")
     i.set_defaults(func=cmd_init)
     return p
 

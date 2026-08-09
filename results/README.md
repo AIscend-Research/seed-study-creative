@@ -43,6 +43,17 @@ full run's would be.
 See `../FINDINGS.md` for what these mean and where they cut against the study's
 original hypothesis.
 
+## figures
+
+Built from the images with `python -m seedstudy figures --run runs/ladder`.
+
+| file | what it shows |
+|---|---|
+| `figures/fig_ladder_<model>_<family>.jpg` | rows = specificity rungs, columns = seeds. The narrowing down the rows is what specification buys; the spread left in the bottom row is what it cannot. **This is the paper's lead figure.** |
+| `figures/fig_signature_<model>.jpg` | rows = one seed held fixed across unrelated prompts, with a strip of per-seed mean 4×4 luminance maps underneath. The strip is what carries the signature claim — the images above it mostly show the prompt winning, which is what the statistics say too. |
+| `figures/contact_sheets/` | one sheet per (model, prompt): every seed at that exact specification |
+| `figures/gallery/index.html` | all 240 artifacts, browsable, grouped by prompt with the prompt text shown |
+
 ## text
 
 Not yet run. `configs/text.json` is ready and points at a model that resolves on

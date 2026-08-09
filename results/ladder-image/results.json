@@ -1,0 +1,731 @@
+{
+  "meta": {
+    "run": "runs/ladder_image",
+    "study": "ladder",
+    "n_artifacts": 240,
+    "seeds": "10 per cell",
+    "image_models": "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0, accounts/fireworks/models/playground-v2-1024px-aesthetic",
+    "text_models": "accounts/fireworks/models/llama-v3p1-8b-instruct, accounts/fireworks/models/qwen2p5-7b-instruct",
+    "embed_model": "nomic-ai/nomic-embed-text-v1.5",
+    "vision_model": "accounts/fireworks/models/qwen2p5-vl-32b-instruct",
+    "permutations": 999,
+    "bootstrap": 500,
+    "balance": "{\"image\": {\"n_artifacts\": 240, \"n_cells\": 24, \"balanced\": true, \"cell_sizes\": [10], \"min_cell\": 10}}"
+  },
+  "decompositions": {
+    "image_lowlevel": {
+      "view": "image_lowlevel",
+      "modality": "image",
+      "n_samples": 240,
+      "n_prompts": 12,
+      "n_models": 2,
+      "n_seeds": 10,
+      "n_features": 56,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 11,
+          "ss": 4963.952036061963,
+          "ms": 451.26836691472386,
+          "eta2": 0.3693416693498484,
+          "var_component": 17.27297634933266,
+          "var_share": 0.25925169100648987,
+          "p_perm": 0.001
+        },
+        {
+          "source": "model",
+          "df": 1,
+          "ss": 2204.848222774807,
+          "ms": 2204.848222774807,
+          "eta2": 0.16405120705169693,
+          "var_component": 17.491994857056135,
+          "var_share": 0.2625389599369092,
+          "p_perm": 0.001
+        },
+        {
+          "source": "prompt:model",
+          "df": 11,
+          "ss": 1163.8972392087771,
+          "ms": 105.80883992807065,
+          "eta2": 0.08659949696493878,
+          "var_component": 8.216392093754077,
+          "var_share": 0.1233205847792639,
+          "p_perm": 0.001
+        },
+        {
+          "source": "seed",
+          "df": 216,
+          "ss": 5107.302501954454,
+          "ms": 23.644918990529877,
+          "eta2": 0.3800076266335159,
+          "var_component": 23.644918990529877,
+          "var_share": 0.35488876427733707,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.25925169100648987,
+        "model": 0.2625389599369092,
+        "prompt:model": 0.1233205847792639,
+        "seed": 0.35488876427733707
+      },
+      "seed_to_prompt": 1.3688966228129755,
+      "seed_to_prompt_ci": [
+        0.8352768354162098,
+        2.186217598290691
+      ],
+      "p_seed_beats_prompt": 0.2805486284289277,
+      "mean_within_prompt_dist": 8.140316258252913,
+      "mean_between_prompt_dist": 10.49681885152372
+    },
+    "image_semantic": {
+      "view": "image_semantic",
+      "modality": "image",
+      "n_samples": 240,
+      "n_prompts": 12,
+      "n_models": 2,
+      "n_seeds": 10,
+      "n_features": 768,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 11,
+          "ss": 120070.25371783516,
+          "ms": 10915.477610712287,
+          "eta2": 0.6514228174795743,
+          "var_component": 511.06963761603777,
+          "var_share": 0.624281949399577,
+          "p_perm": 0.001
+        },
+        {
+          "source": "model",
+          "df": 1,
+          "ss": 1935.0761665996888,
+          "ms": 1935.0761665996888,
+          "eta2": 0.010498460105250046,
+          "var_component": 10.341594235067967,
+          "var_share": 0.012632467542159194,
+          "p_perm": 0.001
+        },
+        {
+          "source": "prompt:model",
+          "df": 11,
+          "ss": 7634.933442306858,
+          "ms": 694.0848583915325,
+          "eta2": 0.04142216494307105,
+          "var_component": 44.09379293486701,
+          "var_share": 0.053861464238423105,
+          "p_perm": 0.001
+        },
+        {
+          "source": "seed",
+          "df": 216,
+          "ss": 54679.73667325828,
+          "ms": 253.1469290428624,
+          "eta2": 0.29665655747210434,
+          "var_component": 253.1469290428624,
+          "var_share": 0.30922411881984063,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.624281949399577,
+        "model": 0.012632467542159194,
+        "prompt:model": 0.053861464238423105,
+        "seed": 0.30922411881984063
+      },
+      "seed_to_prompt": 0.49532766263264016,
+      "seed_to_prompt_ci": [
+        0.306087855227708,
+        0.6737952738275145
+      ],
+      "p_seed_beats_prompt": 0.1172069825436409,
+      "mean_within_prompt_dist": 22.933559581839404,
+      "mean_between_prompt_dist": 39.014183500602016
+    }
+  },
+  "comparison": {
+    "per_view": [
+      {
+        "view": "image_lowlevel",
+        "modality": "image",
+        "seed_share": 0.35488876427733707,
+        "prompt_share": 0.25925169100648987,
+        "model_share": 0.2625389599369092,
+        "interaction_share": 0.1233205847792639,
+        "seed_to_prompt": 1.3688966228129755,
+        "seed_to_prompt_ci": [
+          0.8352768354162098,
+          2.186217598290691
+        ],
+        "p_seed_beats_prompt": 0.2805486284289277
+      },
+      {
+        "view": "image_semantic",
+        "modality": "image",
+        "seed_share": 0.30922411881984063,
+        "prompt_share": 0.624281949399577,
+        "model_share": 0.012632467542159194,
+        "interaction_share": 0.053861464238423105,
+        "seed_to_prompt": 0.49532766263264016,
+        "seed_to_prompt_ci": [
+          0.306087855227708,
+          0.6737952738275145
+        ],
+        "p_seed_beats_prompt": 0.1172069825436409
+      }
+    ],
+    "semantic_pair": null,
+    "surface_pair": null
+  },
+  "seed_signatures": {
+    "image_lowlevel": [
+      {
+        "view": "image_lowlevel",
+        "model": "accounts/fireworks/models/playground-v2-1024px-aesthetic",
+        "n_prompts": 12,
+        "n_seeds": 10,
+        "eta2_seed": 0.10127733872573559,
+        "eta2_prompt": 0.6259734240837892,
+        "f_stat": 4.084523709245394,
+        "p_perm": 0.001,
+        "top_features": [
+          {
+            "feature": "lum_cell_4",
+            "eta2_seed": 0.47867158128151716,
+            "strongest_seed": "4",
+            "seed_effect_sd": 0.6918609551647767
+          },
+          {
+            "feature": "lum_cell_0",
+            "eta2_seed": 0.35760435891144765,
+            "strongest_seed": "8",
+            "seed_effect_sd": 0.5980003000931083
+          },
+          {
+            "feature": "lum_cell_8",
+            "eta2_seed": 0.3076763283466837,
+            "strongest_seed": "8",
+            "seed_effect_sd": 0.5546857924507205
+          },
+          {
+            "feature": "lum_cell_10",
+            "eta2_seed": 0.3003915236196931,
+            "strongest_seed": "7",
+            "seed_effect_sd": 0.548079851499481
+          },
+          {
+            "feature": "lum_cell_1",
+            "eta2_seed": 0.2914712250817812,
+            "strongest_seed": "8",
+            "seed_effect_sd": 0.5398807507976008
+          },
+          {
+            "feature": "lum_cell_7",
+            "eta2_seed": 0.26951621499622913,
+            "strongest_seed": "3",
+            "seed_effect_sd": 0.5191495112164021
+          }
+        ]
+      },
+      {
+        "view": "image_lowlevel",
+        "model": "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0",
+        "n_prompts": 12,
+        "n_seeds": 10,
+        "eta2_seed": 0.16840985821971102,
+        "eta2_prompt": 0.47782409906714207,
+        "f_stat": 5.236535497328492,
+        "p_perm": 0.001,
+        "top_features": [
+          {
+            "feature": "lum_cell_10",
+            "eta2_seed": 0.6052413206217339,
+            "strongest_seed": "7",
+            "seed_effect_sd": 0.7779725706101304
+          },
+          {
+            "feature": "lum_cell_7",
+            "eta2_seed": 0.49484743703912404,
+            "strongest_seed": "3",
+            "seed_effect_sd": 0.7034539338429519
+          },
+          {
+            "feature": "lum_cell_0",
+            "eta2_seed": 0.4906459313371871,
+            "strongest_seed": "8",
+            "seed_effect_sd": 0.7004612275759359
+          },
+          {
+            "feature": "lum_cell_3",
+            "eta2_seed": 0.44382088100446593,
+            "strongest_seed": "3",
+            "seed_effect_sd": 0.6661988299332758
+          },
+          {
+            "feature": "lum_cell_1",
+            "eta2_seed": 0.4324765532537129,
+            "strongest_seed": "8",
+            "seed_effect_sd": 0.6576294954255876
+          },
+          {
+            "feature": "lum_cell_4",
+            "eta2_seed": 0.4318812137236437,
+            "strongest_seed": "8",
+            "seed_effect_sd": 0.6571766990114939
+          }
+        ]
+      }
+    ],
+    "image_semantic": [
+      {
+        "view": "image_semantic",
+        "model": "accounts/fireworks/models/playground-v2-1024px-aesthetic",
+        "n_prompts": 12,
+        "n_seeds": 10,
+        "eta2_seed": 0.028757351646745713,
+        "eta2_prompt": 0.7121543556271787,
+        "f_stat": 1.2209384869761275,
+        "p_perm": 0.002,
+        "top_features": [
+          {
+            "feature": "e661",
+            "eta2_seed": 0.16575915199315344,
+            "strongest_seed": "7",
+            "seed_effect_sd": 0.4071352993700662
+          },
+          {
+            "feature": "e77",
+            "eta2_seed": 0.15082923742186968,
+            "strongest_seed": "1",
+            "seed_effect_sd": 0.3883674000503514
+          },
+          {
+            "feature": "e424",
+            "eta2_seed": 0.14340907833868702,
+            "strongest_seed": "8",
+            "seed_effect_sd": 0.37869391114551465
+          },
+          {
+            "feature": "e487",
+            "eta2_seed": 0.1424546801213094,
+            "strongest_seed": "1",
+            "seed_effect_sd": 0.3774316893443228
+          },
+          {
+            "feature": "e588",
+            "eta2_seed": 0.12670001274101692,
+            "strongest_seed": "10",
+            "seed_effect_sd": 0.3559494525083821
+          },
+          {
+            "feature": "e541",
+            "eta2_seed": 0.11511349088191909,
+            "strongest_seed": "8",
+            "seed_effect_sd": 0.3392837910686555
+          }
+        ]
+      },
+      {
+        "view": "image_semantic",
+        "model": "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0",
+        "n_prompts": 12,
+        "n_seeds": 10,
+        "eta2_seed": 0.039900755660079716,
+        "eta2_prompt": 0.679934067900658,
+        "f_stat": 1.5666055212112664,
+        "p_perm": 0.001,
+        "top_features": [
+          {
+            "feature": "e261",
+            "eta2_seed": 0.21012799531134344,
+            "strongest_seed": "5",
+            "seed_effect_sd": 0.45839720255619304
+          },
+          {
+            "feature": "e109",
+            "eta2_seed": 0.19869049580061224,
+            "strongest_seed": "3",
+            "seed_effect_sd": 0.44574712091118696
+          },
+          {
+            "feature": "e524",
+            "eta2_seed": 0.19140830737392714,
+            "strongest_seed": "5",
+            "seed_effect_sd": 0.4375023512781699
+          },
+          {
+            "feature": "e315",
+            "eta2_seed": 0.16260560726495546,
+            "strongest_seed": "6",
+            "seed_effect_sd": 0.4032438558303839
+          },
+          {
+            "feature": "e176",
+            "eta2_seed": 0.16024506858842477,
+            "strongest_seed": "5",
+            "seed_effect_sd": 0.4003062185233009
+          },
+          {
+            "feature": "e6",
+            "eta2_seed": 0.15874804290773623,
+            "strongest_seed": "5",
+            "seed_effect_sd": 0.398431980277357
+          }
+        ]
+      }
+    ]
+  },
+  "legibility": {
+    "image_lowlevel": {
+      "view": "image_lowlevel",
+      "modality": "image",
+      "n_samples": 240,
+      "n_classes": 12,
+      "accuracy": 0.6791666666666667,
+      "chance": 0.08333333333333333,
+      "lift": 0.65,
+      "ci_lo": 0.6208333333333333,
+      "ci_hi": 0.7375,
+      "per_rung": [
+        {
+          "rung": 1,
+          "n": 40,
+          "accuracy": 0.675
+        },
+        {
+          "rung": 2,
+          "n": 40,
+          "accuracy": 0.575
+        },
+        {
+          "rung": 3,
+          "n": 40,
+          "accuracy": 0.675
+        },
+        {
+          "rung": 4,
+          "n": 40,
+          "accuracy": 0.75
+        },
+        {
+          "rung": 5,
+          "n": 40,
+          "accuracy": 0.6
+        },
+        {
+          "rung": 6,
+          "n": 40,
+          "accuracy": 0.8
+        }
+      ],
+      "per_model": [
+        {
+          "model": "accounts/fireworks/models/playground-v2-1024px-aesthetic",
+          "n": 120,
+          "accuracy": 0.775,
+          "chance": 0.08333333333333333
+        },
+        {
+          "model": "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0",
+          "n": 120,
+          "accuracy": 0.5833333333333334,
+          "chance": 0.08333333333333333
+        }
+      ],
+      "confusable_pairs": [
+        {
+          "true": "object_r2",
+          "predicted": "object_r1",
+          "count": 10
+        },
+        {
+          "true": "object_r5",
+          "predicted": "object_r4",
+          "count": 9
+        },
+        {
+          "true": "landscape_r3",
+          "predicted": "landscape_r4",
+          "count": 7
+        },
+        {
+          "true": "object_r1",
+          "predicted": "object_r2",
+          "count": 7
+        },
+        {
+          "true": "object_r4",
+          "predicted": "object_r5",
+          "count": 5
+        },
+        {
+          "true": "object_r1",
+          "predicted": "object_r5",
+          "count": 3
+        },
+        {
+          "true": "object_r2",
+          "predicted": "object_r3",
+          "count": 3
+        },
+        {
+          "true": "object_r5",
+          "predicted": "object_r6",
+          "count": 3
+        },
+        {
+          "true": "object_r6",
+          "predicted": "object_r4",
+          "count": 3
+        },
+        {
+          "true": "object_r6",
+          "predicted": "object_r5",
+          "count": 3
+        }
+      ]
+    },
+    "image_semantic": {
+      "view": "image_semantic",
+      "modality": "image",
+      "n_samples": 240,
+      "n_classes": 12,
+      "accuracy": 0.7458333333333333,
+      "chance": 0.08333333333333333,
+      "lift": 0.7227272727272728,
+      "ci_lo": 0.6875,
+      "ci_hi": 0.8041666666666667,
+      "per_rung": [
+        {
+          "rung": 1,
+          "n": 40,
+          "accuracy": 0.725
+        },
+        {
+          "rung": 2,
+          "n": 40,
+          "accuracy": 0.825
+        },
+        {
+          "rung": 3,
+          "n": 40,
+          "accuracy": 0.875
+        },
+        {
+          "rung": 4,
+          "n": 40,
+          "accuracy": 0.775
+        },
+        {
+          "rung": 5,
+          "n": 40,
+          "accuracy": 0.425
+        },
+        {
+          "rung": 6,
+          "n": 40,
+          "accuracy": 0.85
+        }
+      ],
+      "per_model": [
+        {
+          "model": "accounts/fireworks/models/playground-v2-1024px-aesthetic",
+          "n": 120,
+          "accuracy": 0.7916666666666666,
+          "chance": 0.08333333333333333
+        },
+        {
+          "model": "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0",
+          "n": 120,
+          "accuracy": 0.7,
+          "chance": 0.08333333333333333
+        }
+      ],
+      "confusable_pairs": [
+        {
+          "true": "object_r1",
+          "predicted": "object_r2",
+          "count": 8
+        },
+        {
+          "true": "object_r5",
+          "predicted": "object_r3",
+          "count": 6
+        },
+        {
+          "true": "object_r5",
+          "predicted": "object_r6",
+          "count": 6
+        },
+        {
+          "true": "object_r2",
+          "predicted": "object_r1",
+          "count": 5
+        },
+        {
+          "true": "object_r5",
+          "predicted": "object_r4",
+          "count": 5
+        },
+        {
+          "true": "landscape_r5",
+          "predicted": "landscape_r4",
+          "count": 3
+        },
+        {
+          "true": "landscape_r5",
+          "predicted": "landscape_r6",
+          "count": 3
+        },
+        {
+          "true": "object_r4",
+          "predicted": "object_r3",
+          "count": 3
+        },
+        {
+          "true": "object_r4",
+          "predicted": "object_r6",
+          "count": 3
+        },
+        {
+          "true": "landscape_r6",
+          "predicted": "landscape_r5",
+          "count": 2
+        }
+      ]
+    }
+  },
+  "specificity_floor": {
+    "image_lowlevel": {
+      "rows": [
+        {
+          "rung": 1,
+          "n_cells": 4,
+          "seed_variance": 0.4766710004005097,
+          "ci_lo": 0.3400931639690809,
+          "ci_hi": 0.5104209010409898,
+          "mean_within_cell_distance": 6.753508441868227,
+          "fraction_of_rung1": 1.0
+        },
+        {
+          "rung": 2,
+          "n_cells": 4,
+          "seed_variance": 0.5465389025647913,
+          "ci_lo": 0.3740135366195804,
+          "ci_hi": 0.5965342987297532,
+          "mean_within_cell_distance": 7.304763955415217,
+          "fraction_of_rung1": 1.1465746859061638
+        },
+        {
+          "rung": 3,
+          "n_cells": 4,
+          "seed_variance": 0.5561875058441199,
+          "ci_lo": 0.4044643146734953,
+          "ci_hi": 0.5959083206123953,
+          "mean_within_cell_distance": 7.594400134808152,
+          "fraction_of_rung1": 1.1668163269357663
+        },
+        {
+          "rung": 4,
+          "n_cells": 4,
+          "seed_variance": 0.32404143892813686,
+          "ci_lo": 0.24784254218851864,
+          "ci_hi": 0.33477374018043227,
+          "mean_within_cell_distance": 5.854190659083488,
+          "fraction_of_rung1": 0.679801033953964
+        },
+        {
+          "rung": 5,
+          "n_cells": 4,
+          "seed_variance": 0.36359919089125187,
+          "ci_lo": 0.2634994932716733,
+          "ci_hi": 0.3924558961786687,
+          "mean_within_cell_distance": 6.1114765952017285,
+          "fraction_of_rung1": 0.7627885702837967
+        },
+        {
+          "rung": 6,
+          "n_cells": 4,
+          "seed_variance": 0.2663461389279631,
+          "ci_lo": 0.1966278640086268,
+          "ci_hi": 0.2788314651111694,
+          "mean_within_cell_distance": 5.258248301538254,
+          "fraction_of_rung1": 0.5587630434915761
+        }
+      ],
+      "n_rungs": 6,
+      "floor_fraction": 0.5587630434915761,
+      "randomness_removed": 0.44123695650842387,
+      "families": [
+        "landscape",
+        "object"
+      ]
+    },
+    "image_semantic": {
+      "rows": [
+        {
+          "rung": 1,
+          "n_cells": 4,
+          "seed_variance": 0.5658619040146162,
+          "ci_lo": 0.44205219427802217,
+          "ci_hi": 0.5801474443413014,
+          "mean_within_cell_distance": 28.900259530410715,
+          "fraction_of_rung1": 1.0
+        },
+        {
+          "rung": 2,
+          "n_cells": 4,
+          "seed_variance": 0.3960287483447748,
+          "ci_lo": 0.3004674751202632,
+          "ci_hi": 0.40448190350591845,
+          "mean_within_cell_distance": 23.800062195100104,
+          "fraction_of_rung1": 0.6998681931670476
+        },
+        {
+          "rung": 3,
+          "n_cells": 4,
+          "seed_variance": 0.3044737411107817,
+          "ci_lo": 0.24161096337697455,
+          "ci_hi": 0.30396869151911293,
+          "mean_within_cell_distance": 21.253567605159024,
+          "fraction_of_rung1": 0.5380707535719124
+        },
+        {
+          "rung": 4,
+          "n_cells": 4,
+          "seed_variance": 0.2510966577545867,
+          "ci_lo": 0.18992317461142108,
+          "ci_hi": 0.2555482986168465,
+          "mean_within_cell_distance": 18.900272066612537,
+          "fraction_of_rung1": 0.4437419376938669
+        },
+        {
+          "rung": 5,
+          "n_cells": 4,
+          "seed_variance": 0.2851899288740238,
+          "ci_lo": 0.22003970747411158,
+          "ci_hi": 0.2836632476537369,
+          "mean_within_cell_distance": 20.12490494332592,
+          "fraction_of_rung1": 0.503992099221893
+        },
+        {
+          "rung": 6,
+          "n_cells": 4,
+          "seed_variance": 0.17505940304857986,
+          "ci_lo": 0.12309825450993582,
+          "ci_hi": 0.19855189682732555,
+          "mean_within_cell_distance": 15.674761408479394,
+          "fraction_of_rung1": 0.30936771287585757
+        }
+      ],
+      "n_rungs": 6,
+      "floor_fraction": 0.30936771287585757,
+      "randomness_removed": 0.6906322871241424,
+      "families": [
+        "landscape",
+        "object"
+      ]
+    }
+  }
+}

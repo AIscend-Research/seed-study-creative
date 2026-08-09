@@ -17,6 +17,7 @@ from pathlib import Path
 from .client import FireworksClient, MockClient
 from .config import StudyConfig, ladder_config, pilot_config
 from .features import FeatureView, build_views
+from .figures import build_all
 from .generate import Manifest, check_balance, run_sweep, slug
 from .report import write_report
 from .legibility import intent_legibility
@@ -245,6 +246,17 @@ def cmd_run(args) -> int:
     return cmd_analyze(args)
 
 
+def cmd_figures(args) -> int:
+    """Paper figures and a gallery from a completed run. Reads images only."""
+    made = build_all(args.run, args.out or Path(args.run) / "figures", progress=_log)
+    for k, v in made.items():
+        if isinstance(v, list):
+            _log(f"{k}: {len(v)} files")
+        else:
+            _log(f"{k}: {v}")
+    return 0
+
+
 def cmd_estimate(args) -> int:
     """Count every API call the design implies, without making any of them.
 
@@ -340,6 +352,11 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument("--price-text-mtok", type=float, help="$ per 1M output tokens")
     e.add_argument("--price-caption", type=float, help="$ per VLM caption call")
     e.set_defaults(func=cmd_estimate)
+
+    fg = sub.add_parser("figures", help="build paper figures + gallery from a run")
+    fg.add_argument("--run", required=True, help="run directory containing artifacts/")
+    fg.add_argument("--out", help="output directory (default <run>/figures)")
+    fg.set_defaults(func=cmd_figures)
 
     i = sub.add_parser("init", help="write a config file to edit")
     i.add_argument("--output", default="configs/study.json")

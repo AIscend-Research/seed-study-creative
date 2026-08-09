@@ -1,0 +1,477 @@
+{
+  "meta": {
+    "run": "runs/text_ladder_gptoss",
+    "study": "text_ladder_gptoss",
+    "n_artifacts": 240,
+    "seeds": "20 per cell",
+    "image_models": "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0, accounts/fireworks/models/playground-v2-1024px-aesthetic",
+    "text_models": "accounts/fireworks/models/gpt-oss-120b",
+    "embed_model": "nomic-ai/nomic-embed-text-v1.5",
+    "vision_model": "(captions off)",
+    "permutations": 999,
+    "bootstrap": 500,
+    "balance": "{\"text\": {\"n_artifacts\": 240, \"n_cells\": 12, \"balanced\": true, \"cell_sizes\": [20], \"min_cell\": 20}}"
+  },
+  "decompositions": {
+    "text_lexical": {
+      "view": "text_lexical",
+      "modality": "text",
+      "n_samples": 240,
+      "n_prompts": 12,
+      "n_models": 1,
+      "n_seeds": 20,
+      "n_features": 16,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 11,
+          "ss": 2990.0040098747895,
+          "ms": 271.8185463522536,
+          "eta2": 0.7786468775715598,
+          "var_component": 13.404524688199256,
+          "var_share": 0.7823997797815806,
+          "p_perm": 0.001
+        },
+        {
+          "source": "model",
+          "df": 0,
+          "ss": 3.931153763365009e-28,
+          "ms": 0.0,
+          "eta2": 1.0237379592096377e-31,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "prompt:model",
+          "df": 0,
+          "ss": 3.9311537633650097e-28,
+          "ms": 0.0,
+          "eta2": 1.0237379592096379e-31,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "seed",
+          "df": 228,
+          "ss": 849.9959901252101,
+          "ms": 3.7280525882684654,
+          "eta2": 0.22135312242844013,
+          "var_component": 3.7280525882684654,
+          "var_share": 0.21760022021841946,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.7823997797815806,
+        "model": 0.0,
+        "prompt:model": 0.0,
+        "seed": 0.21760022021841946
+      },
+      "seed_to_prompt": 0.278118969153041,
+      "seed_to_prompt_ci": [
+        0.1715560111633359,
+        0.36302371246379395
+      ],
+      "p_seed_beats_prompt": 0.13577023498694518,
+      "mean_within_prompt_dist": 2.5335659898575007,
+      "mean_between_prompt_dist": 5.275144987437865
+    },
+    "text_semantic": {
+      "view": "text_semantic",
+      "modality": "text",
+      "n_samples": 240,
+      "n_prompts": 12,
+      "n_models": 1,
+      "n_seeds": 20,
+      "n_features": 768,
+      "table": [
+        {
+          "source": "prompt",
+          "df": 11,
+          "ss": 139941.1188903622,
+          "ms": 12721.919899123837,
+          "eta2": 0.7592291606464964,
+          "var_component": 626.3637841865345,
+          "var_share": 0.7629204398826845,
+          "p_perm": 0.001
+        },
+        {
+          "source": "model",
+          "df": 0,
+          "ss": 3.8688157117992084e-27,
+          "ms": 0.0,
+          "eta2": 2.0989668575299525e-32,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "prompt:model",
+          "df": 0,
+          "ss": 3.8688157117992084e-27,
+          "ms": 0.0,
+          "eta2": 2.0989668575299525e-32,
+          "var_component": 0.0,
+          "var_share": 0.0,
+          "p_perm": NaN
+        },
+        {
+          "source": "seed",
+          "df": 228,
+          "ss": 44378.88110963781,
+          "ms": 194.6442153931483,
+          "eta2": 0.24077083935350377,
+          "var_component": 194.6442153931483,
+          "var_share": 0.23707956011731543,
+          "p_perm": NaN
+        }
+      ],
+      "var_share": {
+        "prompt": 0.7629204398826845,
+        "model": 0.0,
+        "prompt:model": 0.0,
+        "seed": 0.23707956011731543
+      },
+      "seed_to_prompt": 0.31075266531562784,
+      "seed_to_prompt_ci": [
+        0.23062454291490206,
+        0.37996850235431034
+      ],
+      "p_seed_beats_prompt": 0.015665796344647518,
+      "mean_within_prompt_dist": 19.55376603279214,
+      "mean_between_prompt_dist": 39.699866188580685
+    }
+  },
+  "comparison": {
+    "per_view": [
+      {
+        "view": "text_lexical",
+        "modality": "text",
+        "seed_share": 0.21760022021841946,
+        "prompt_share": 0.7823997797815806,
+        "model_share": 0.0,
+        "interaction_share": 0.0,
+        "seed_to_prompt": 0.278118969153041,
+        "seed_to_prompt_ci": [
+          0.1715560111633359,
+          0.36302371246379395
+        ],
+        "p_seed_beats_prompt": 0.13577023498694518
+      },
+      {
+        "view": "text_semantic",
+        "modality": "text",
+        "seed_share": 0.23707956011731543,
+        "prompt_share": 0.7629204398826845,
+        "model_share": 0.0,
+        "interaction_share": 0.0,
+        "seed_to_prompt": 0.31075266531562784,
+        "seed_to_prompt_ci": [
+          0.23062454291490206,
+          0.37996850235431034
+        ],
+        "p_seed_beats_prompt": 0.015665796344647518
+      }
+    ],
+    "semantic_pair": null,
+    "surface_pair": null
+  },
+  "seed_signatures": {},
+  "legibility": {
+    "text_lexical": {
+      "view": "text_lexical",
+      "modality": "text",
+      "n_samples": 240,
+      "n_classes": 12,
+      "accuracy": 0.725,
+      "chance": 0.08333333333333333,
+      "lift": 0.7,
+      "ci_lo": 0.6666666666666666,
+      "ci_hi": 0.7833333333333333,
+      "per_rung": [
+        {
+          "rung": 1,
+          "n": 40,
+          "accuracy": 0.675
+        },
+        {
+          "rung": 2,
+          "n": 40,
+          "accuracy": 0.7
+        },
+        {
+          "rung": 3,
+          "n": 40,
+          "accuracy": 0.725
+        },
+        {
+          "rung": 4,
+          "n": 40,
+          "accuracy": 0.6
+        },
+        {
+          "rung": 5,
+          "n": 40,
+          "accuracy": 0.8
+        },
+        {
+          "rung": 6,
+          "n": 40,
+          "accuracy": 0.85
+        }
+      ],
+      "per_model": [
+        {
+          "model": "accounts/fireworks/models/gpt-oss-120b",
+          "n": 240,
+          "accuracy": 0.725,
+          "chance": 0.08333333333333333
+        }
+      ],
+      "confusable_pairs": [
+        {
+          "true": "object_r4",
+          "predicted": "landscape_r4",
+          "count": 7
+        },
+        {
+          "true": "landscape_r2",
+          "predicted": "landscape_r3",
+          "count": 5
+        },
+        {
+          "true": "object_r5",
+          "predicted": "object_r4",
+          "count": 5
+        },
+        {
+          "true": "landscape_r4",
+          "predicted": "object_r4",
+          "count": 4
+        },
+        {
+          "true": "object_r1",
+          "predicted": "object_r2",
+          "count": 4
+        },
+        {
+          "true": "object_r2",
+          "predicted": "object_r1",
+          "count": 4
+        },
+        {
+          "true": "object_r3",
+          "predicted": "landscape_r1",
+          "count": 4
+        },
+        {
+          "true": "landscape_r1",
+          "predicted": "landscape_r2",
+          "count": 3
+        },
+        {
+          "true": "landscape_r1",
+          "predicted": "landscape_r3",
+          "count": 3
+        },
+        {
+          "true": "landscape_r6",
+          "predicted": "landscape_r5",
+          "count": 3
+        }
+      ]
+    },
+    "text_semantic": {
+      "view": "text_semantic",
+      "modality": "text",
+      "n_samples": 240,
+      "n_classes": 12,
+      "accuracy": 0.9958333333333333,
+      "chance": 0.08333333333333333,
+      "lift": 0.9954545454545455,
+      "ci_lo": 0.9875,
+      "ci_hi": 1.0,
+      "per_rung": [
+        {
+          "rung": 1,
+          "n": 40,
+          "accuracy": 1.0
+        },
+        {
+          "rung": 2,
+          "n": 40,
+          "accuracy": 0.975
+        },
+        {
+          "rung": 3,
+          "n": 40,
+          "accuracy": 1.0
+        },
+        {
+          "rung": 4,
+          "n": 40,
+          "accuracy": 1.0
+        },
+        {
+          "rung": 5,
+          "n": 40,
+          "accuracy": 1.0
+        },
+        {
+          "rung": 6,
+          "n": 40,
+          "accuracy": 1.0
+        }
+      ],
+      "per_model": [
+        {
+          "model": "accounts/fireworks/models/gpt-oss-120b",
+          "n": 240,
+          "accuracy": 0.9958333333333333,
+          "chance": 0.08333333333333333
+        }
+      ],
+      "confusable_pairs": [
+        {
+          "true": "object_r2",
+          "predicted": "object_r3",
+          "count": 1
+        }
+      ]
+    }
+  },
+  "specificity_floor": {
+    "text_lexical": {
+      "rows": [
+        {
+          "rung": 1,
+          "n_cells": 2,
+          "seed_variance": 0.36361912622421694,
+          "ci_lo": 0.24216662342979864,
+          "ci_hi": 0.49286878655230076,
+          "mean_within_cell_distance": 2.9805206767962176,
+          "fraction_of_rung1": 1.0
+        },
+        {
+          "rung": 2,
+          "n_cells": 2,
+          "seed_variance": 0.3495264994997685,
+          "ci_lo": 0.2298918842660971,
+          "ci_hi": 0.44265561789849517,
+          "mean_within_cell_distance": 2.9537379206283636,
+          "fraction_of_rung1": 0.9612434393350404
+        },
+        {
+          "rung": 3,
+          "n_cells": 2,
+          "seed_variance": 0.11849398445741344,
+          "ci_lo": 0.07688032001161044,
+          "ci_hi": 0.16464015915909236,
+          "mean_within_cell_distance": 1.7980716706663342,
+          "fraction_of_rung1": 0.3258739046205919
+        },
+        {
+          "rung": 4,
+          "n_cells": 2,
+          "seed_variance": 0.18056658245396134,
+          "ci_lo": 0.14026587189393144,
+          "ci_hi": 0.20414226075678477,
+          "mean_within_cell_distance": 2.2800682974936577,
+          "fraction_of_rung1": 0.4965816411500294
+        },
+        {
+          "rung": 5,
+          "n_cells": 2,
+          "seed_variance": 0.20140895722164498,
+          "ci_lo": 0.151601541057986,
+          "ci_hi": 0.2299346378079175,
+          "mean_within_cell_distance": 2.3877500257091087,
+          "fraction_of_rung1": 0.5539008888587753
+        },
+        {
+          "rung": 6,
+          "n_cells": 2,
+          "seed_variance": 0.18440457074366934,
+          "ci_lo": 0.13825065743656056,
+          "ci_hi": 0.20910488867669197,
+          "mean_within_cell_distance": 2.3099454701645477,
+          "fraction_of_rung1": 0.5071366092826501
+        }
+      ],
+      "n_rungs": 6,
+      "floor_fraction": 0.5071366092826501,
+      "randomness_removed": 0.49286339071734986,
+      "families": [
+        "landscape",
+        "object"
+      ]
+    },
+    "text_semantic": {
+      "rows": [
+        {
+          "rung": 1,
+          "n_cells": 2,
+          "seed_variance": 0.24463984983257844,
+          "ci_lo": 0.21271334731062078,
+          "ci_hi": 0.2507379031451631,
+          "mean_within_cell_distance": 18.774209194259,
+          "fraction_of_rung1": 1.0
+        },
+        {
+          "rung": 2,
+          "n_cells": 2,
+          "seed_variance": 0.2505298620933005,
+          "ci_lo": 0.20657587537121488,
+          "ci_hi": 0.26910009537411667,
+          "mean_within_cell_distance": 19.14551196699243,
+          "fraction_of_rung1": 1.0240762584867222
+        },
+        {
+          "rung": 3,
+          "n_cells": 2,
+          "seed_variance": 0.25274190408681263,
+          "ci_lo": 0.22013202404955015,
+          "ci_hi": 0.2557533256153747,
+          "mean_within_cell_distance": 19.60269487835445,
+          "fraction_of_rung1": 1.0331182931144656
+        },
+        {
+          "rung": 4,
+          "n_cells": 2,
+          "seed_variance": 0.2947258462927357,
+          "ci_lo": 0.25798841476683954,
+          "ci_hi": 0.30141863326028473,
+          "mean_within_cell_distance": 21.04947320663117,
+          "fraction_of_rung1": 1.2047335971405888
+        },
+        {
+          "rung": 5,
+          "n_cells": 2,
+          "seed_variance": 0.2661072583555987,
+          "ci_lo": 0.22180198636059895,
+          "ci_hi": 0.2794910352609997,
+          "mean_within_cell_distance": 19.989526147554898,
+          "fraction_of_rung1": 1.0877510697366422
+        },
+        {
+          "rung": 6,
+          "n_cells": 2,
+          "seed_variance": 0.21191321209794511,
+          "ci_lo": 0.17799148323927372,
+          "ci_hi": 0.22538026808410683,
+          "mean_within_cell_distance": 17.74700473271405,
+          "fraction_of_rung1": 0.8662252378055737
+        }
+      ],
+      "n_rungs": 6,
+      "floor_fraction": 0.8662252378055737,
+      "randomness_removed": 0.1337747621944263,
+      "families": [
+        "landscape",
+        "object"
+      ]
+    }
+  }
+}

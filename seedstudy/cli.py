@@ -145,6 +145,17 @@ def cmd_analyze(args) -> int:
     # would let a model effect pose as a seed effect.
     signatures: dict[str, list] = {}
     for name, v in sorted(views.items()):
+        # The test asks whether seed 7 means the same thing across prompts. That
+        # is only a question if the backend honours `seed` at all — Fireworks
+        # serverless does not for chat completions (verified: same seed, temp 1.0,
+        # diverges within ~40 characters; temp 0 is deterministic, so it is the
+        # seed parameter being ignored, not batching noise). With arbitrary seed
+        # labels the test is null by construction, so skip it rather than report
+        # a p-value that means nothing.
+        if v.modality == "text":
+            _log(f"  seed signature skipped for {name}: "
+                 f"backend does not honour `seed` for text")
+            continue
         for model in sorted(set(v.model_ids)):
             mask = [i for i, m in enumerate(v.model_ids) if m == model]
             try:

@@ -1,0 +1,59 @@
+{
+  "caption_images": false,
+  "embed_model": "nomic-ai/nomic-embed-text-v1.5",
+  "image_models": [
+    "accounts/fireworks/models/stable-diffusion-xl-1024-v1-0"
+  ],
+  "image_params": {
+    "cfg_scale": 7,
+    "height": 1024,
+    "negative_prompt": "",
+    "sampler": null,
+    "steps": 20,
+    "width": 1024
+  },
+  "image_prompts": [
+    {
+      "id": "loose_landscape",
+      "specificity": "loose",
+      "text": "a landscape"
+    },
+    {
+      "id": "loose_portrait",
+      "specificity": "loose",
+      "text": "a portrait of a person"
+    }
+  ],
+  "max_workers": 8,
+  "name": "text_pilot",
+  "out_dir": "runs/text_pilot",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "text_models": [
+    "accounts/fireworks/models/gpt-oss-120b"
+  ],
+  "text_params": {
+    "max_tokens": 1200,
+    "system": null,
+    "temperature": 1.0,
+    "top_p": 1.0
+  },
+  "text_prompts": [
+    {
+      "id": "loose_landscape",
+      "specificity": "loose",
+      "text": "Describe a landscape."
+    },
+    {
+      "id": "loose_portrait",
+      "specificity": "loose",
+      "text": "Describe a person."
+    }
+  ],
+  "vision_model": "accounts/fireworks/models/qwen2p5-vl-32b-instruct"
+}

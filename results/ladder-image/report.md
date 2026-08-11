@@ -1,4 +1,4 @@
-# Seed study — results
+# Seed study: results
 
 Run: `runs/ladder_image` · 240 artifacts
 

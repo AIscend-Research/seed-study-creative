@@ -27,14 +27,14 @@ DARK = {"seed": "#3987e5", "prompt": "#d95926", "model": "#199e70", "prompt:mode
 
 def _fmt(x: float, nd: int = 3) -> str:
     if x != x:
-        return "—"
+        return "n/a"
     if x == float("inf"):
         return "inf"
     return f"{x:.{nd}f}"
 
 
 def _pct(x: float) -> str:
-    return "—" if x != x else f"{100 * x:.1f}%"
+    return "n/a" if x != x else f"{100 * x:.1f}%"
 
 
 def _stacked_bars(decomps: dict[str, Decomposition]) -> str:
@@ -545,7 +545,7 @@ def render_markdown(
     legibilities: dict | None = None,
     curves: dict | None = None,
 ) -> str:
-    lines = ["# Seed study — results", ""]
+    lines = ["# Seed study: results", ""]
     lines.append(f"Run: `{meta.get('run', '?')}` · {meta.get('n_artifacts', '?')} artifacts")
     lines.append("")
     lines.append("| view | modality | seed | prompt | model | prompt x model | seed/prompt | 95% CI | P(seed pair > prompt pair) |")
@@ -589,7 +589,7 @@ def render_markdown(
         lines.append("|---|---|---|---|---|---|---|")
         for view in sorted(signatures):
             for sig in signatures[view]:
-                feats = ", ".join(f["feature"] for f in sig.top_features[:3]) or "—"
+                feats = ", ".join(f["feature"] for f in sig.top_features[:3]) or "n/a"
                 lines.append(
                     f"| {view} | {sig.model.split('/')[-1]} | {_pct(sig.eta2_seed)} | "
                     f"{_pct(sig.eta2_prompt)} | {_fmt(sig.f_stat, 2)} | {_fmt(sig.p_perm)} | {feats} |"

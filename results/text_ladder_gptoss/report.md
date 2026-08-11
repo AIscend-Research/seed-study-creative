@@ -1,4 +1,4 @@
-# Seed study — results
+# Seed study: results
 
 Run: `runs/text_ladder_gptoss` · 240 artifacts
 
